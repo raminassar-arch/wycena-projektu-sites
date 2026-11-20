@@ -160,6 +160,13 @@ select:focus, input:focus, button:focus-visible {
 .btn[disabled] { opacity: 0.55; cursor: not-allowed; }
 #updateBtn { display: none !important; }
 
+/* Przełączniki zakresów Z1–Z6 – akcent złoty zgodny z PAB. */
+.scope-chip:hover { border-color: var(--green-mid); background: var(--green-pale); }
+.scope-chip.is-on { border-color: var(--gold); background: var(--gold-pale); box-shadow: inset 3px 0 0 var(--gold); }
+.scope-chip.is-on .scope-code { color: var(--gold-text); border-color: var(--gold); }
+.scope-chip.is-on .scope-check { background: var(--green); border-color: var(--green); }
+.scope-chip.is-on .scope-state { color: var(--gold-text); }
+
 /* --- Wyniki --- */
 .big { color: var(--green-deep); letter-spacing: -0.01em; }
 .range, .tag, .hint, .foot { color: var(--mute); }

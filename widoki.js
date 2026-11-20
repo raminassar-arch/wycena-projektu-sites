@@ -11,9 +11,9 @@
 
   /* Kolejność pytań w kreatorze – grupy pól z formularza. */
   const KROKI = [
-    { tytul: 'Obiekt i fundamenty', opis: 'Rodzaj budynku, powierzchnia, kondygnacje.', pola: ['obj', 'char', 'pu', 'pz', 'kond', 'podp', 'geo', 'zab'] },
+    { tytul: 'Rodzaj projektu (Z1–Z6)', opis: 'Wybierz fazy i rodzaje projektu. Kliknij przycisk, aby włączyć lub odznaczyć zakres.', pola: ZAKRESY.map(([k]) => k) },
+    { tytul: 'Dane obiektu', opis: 'Rodzaj budynku, powierzchnia, kondygnacje.', pola: ['obj', 'char', 'pu', 'pz', 'kond', 'podp', 'geo', 'zab'] },
     { tytul: 'Projekt i usługi', opis: 'Typ projektu, lokalizacja, zakres usług dodatkowych.', pola: ['typ', 'gcena', 'lok', 'skompl', 'instal', 'wyk', 'kosztorys', 'wiz'] },
-    { tytul: 'Zakres opracowania', opis: 'Rodzaj projektu: koncepcyjny, wykonawczy, wielobranżowy, wnętrza, instalacyjny i konstrukcyjny – osobno.', pola: ZAKRESY.map(([k]) => k) },
     { tytul: 'Praca w BIM', opis: 'Modelowanie, zakres branż, formaty i wymagania.', pola: ['bim', 'lod', 'zakres', 'koord', 'eir', 'ifc', 'd5', 'wizn', 'cde'] },
     { tytul: 'Projekty branżowe', opis: 'Dodatkowe opracowania instalacyjne i specjalistyczne poza podstawą E1–E9.', pola: P.branze.map(([k]) => 'br_' + k) },
     { tytul: 'Koszty drukowania', opis: 'Komplety, arkusze i oprawa dokumentacji dla inwestora i urzędu.', pola: ['drukKomplet', 'drukA4', 'drukA3', 'drukA1', 'drukOprawa'] },
@@ -51,17 +51,27 @@
     const krok = KROKI[stepIdx];
     $('wizStepInfo').innerHTML = '<b>Krok ' + (stepIdx + 1) + ' z ' + KROKI.length + '</b> · ' + esc(krok.tytul);
     $('wizProgress').style.width = Math.round((stepIdx + 1) / KROKI.length * 100) + '%';
-    $('wizQuestions').innerHTML = krok.pola.map(klucz => {
-      const p = POLE[klucz];
-      if (!p) return '';
-      const wartosc = s[klucz];
-      const kontrolka = p.opcje
-        ? '<select id="w_' + klucz + '" data-k="' + klucz + '">' +
-          p.opcje.map(o => '<option' + (String(wartosc) === String(o) ? ' selected' : '') + '>' + esc(o) + '</option>').join('') +
-          '</select>'
-        : '<input id="w_' + klucz + '" data-k="' + klucz + '" type="number" min="0" step="any" value="' + esc(wartosc) + '">';
-      return '<div class="wiz-q"><label for="w_' + klucz + '">' + esc(p.etykieta) + '</label>' + kontrolka + '</div>';
-    }).join('');
+    const hint = krok.opis ? '<p class="wiz-hint">' + esc(krok.opis) + '</p>' : '';
+    const samZakres = krok.pola.length > 0 && krok.pola.every(k => ZAKRESY_KLUCZE.has(k));
+    if (samZakres) {
+      $('wizQuestions').innerHTML = hint +
+        '<div class="wiz-scope-grid">' + krok.pola.map(klucz =>
+          przyciskZakresuHtml(klucz, POLE[klucz].etykieta, s[klucz], 'w_' + klucz)).join('') +
+        '</div><p class="scope-count" id="wizScopeCount"></p>';
+    } else {
+      $('wizQuestions').innerHTML = hint + krok.pola.map(klucz => {
+        const p = POLE[klucz];
+        if (!p) return '';
+        const wartosc = s[klucz];
+        const kontrolka = p.opcje
+          ? '<select id="w_' + klucz + '" data-k="' + klucz + '">' +
+            p.opcje.map(o => '<option' + (String(wartosc) === String(o) ? ' selected' : '') + '>' + esc(o) + '</option>').join('') +
+            '</select>'
+          : '<input id="w_' + klucz + '" data-k="' + klucz + '" type="number" min="0" step="any" value="' + esc(wartosc) + '">';
+        return '<div class="wiz-q"><label for="w_' + klucz + '">' + esc(p.etykieta) + '</label>' + kontrolka + '</div>';
+      }).join('');
+    }
+    odswierzLicznikZakresow();
     $('wizQuestions').scrollTop = 0;
     $('wizBack').disabled = stepIdx === 0;
     const ostatni = stepIdx === KROKI.length - 1;
@@ -99,8 +109,8 @@
     if (!klucz) return;
     s[klucz] = e.target.tagName === 'INPUT' ? (parseFloat(e.target.value) || 0) : e.target.value;
     try { localStorage.setItem('kalkulator-projektu', JSON.stringify(s)); } catch (x) { /* brak pamięci */ }
-    const pole = $(klucz);
-    if (pole) pole.value = String(s[klucz]);
+    ustawKontrolke(klucz, s[klucz]);
+    odswierzLicznikZakresow();
     pokazWyniki();
     updateLive();
   };
@@ -109,8 +119,8 @@
   $('form').addEventListener('input', e => {
     const klucz = e.target.id;
     if (!klucz) return;
-    const pytanie = $('w_' + klucz);
-    if (pytanie) pytanie.value = String(s[klucz]);
+    ustawKontrolke('w_' + klucz, e.target.value);
+    odswierzLicznikZakresow();
     updateLive();
   });
 

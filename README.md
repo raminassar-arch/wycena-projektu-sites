@@ -29,8 +29,8 @@ zapobiega przetwarzaniu przez Jekyll.
 | Warstwa | Plik | Rola |
 | --- | --- | --- |
 | Dane | `parametry.js` | stawki E1–E9, Z1–Z6, branze, czas, zespół – bez zmian |
-| Silnik | `app.js` | `oblicz()`, `obliczCzas()`, `obliczPlatnosci()`, `obliczKosztyZespolu()` – bez zmian |
-| Kreator | `widoki.js` | 10 kroków Q&A, przełączanie widoków – bez zmian |
+| Silnik | `app.js` | `oblicz()`, `obliczCzas()`, `obliczPlatnosci()`, `obliczKosztyZespolu()`; przyciski Z1–Z6 |
+| Kreator | `widoki.js` | 10 kroków Q&A: pierwszy to „Rodzaj projektu (Z1–Z6)”, potem dane obiektu |
 | Wygląd kalkulatora | `styles.css`, `wizard.css` | identyczny jak w desktopie, wraz z blokadą wyników i regułami druku |
 | Styl WWW | `site.css` | paleta PAB sites: ciemna zieleń + złoto, karty, topbar, stopka |
 | Most płatności | `js/payment-web.js` | odpowiednik Electron API: płatność, anulowanie, PDF przez druk |
@@ -47,7 +47,8 @@ jest ostrzeżenie przed podwójnym zamówieniem.
 
 Kalkulator i kreator działają w całości w przeglądarce:
 
-* 10 kroków kreatora z przeliczeniem na żywo,
+* 10 kroków kreatora z przeliczeniem na żywo – pierwszy krok to wybór rodzaju
+  projektu Z1–Z6 przyciskami do włączania i odznaczania,
 * edycja parametrów i własne pozycje kosztów (zapis w `localStorage`),
 * koszty etapów, formalności, opłaty, wydruk, zakresy Z1–Z6, branze,
 * czas realizacji (Kanban), obsada zespołu, harmonogram płatności.
@@ -105,7 +106,7 @@ Następnie w repozytorium: **Settings → Pages → Build and deployment →
 Source: Deploy from a branch → Branch: `main`, folder: `/ (root)` → Save**.
 Adres publikacji: `https://raminassar-arch.github.io/wycena-projektu-sites/`.
 
-Po każdej zmianie plików podnieś sufiks w zapytaniach `?v=1.7.0b`
+Po każdej zmianie plików podnieś sufiks w zapytaniach `?v=1.7.0c`
 w `index.html` oraz w `js/payment-web.js` (lista arkuszy w wydruku), aby
 przeglądarki nie trzymały starych plików z pamięci podręcznej. GitHub Pages
 ustawia `Cache-Control: max-age=600`.

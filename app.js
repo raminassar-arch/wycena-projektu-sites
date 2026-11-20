@@ -21,6 +21,51 @@ const ZAKRESY = P.zakresy;
 const klucze = Object.keys;
 const esc = v => String(v).replace(/&/g, '&amp;').replace(/'/g, '&#39;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 
+/* Zakresy Z1–Z6 są w formularzu i w kreatorze przyciskami do włączania
+   i odznaczania (zamiast listy Tak/Nie). Jeden kod obsługuje oba widoki. */
+const ZAKRESY_KLUCZE = new Set(ZAKRESY.map(([k]) => k));
+const kodZakresu = k => 'Z' + (ZAKRESY.findIndex(([klucz]) => klucz === k) + 1);
+const tekstZakresu = w => (w === 'Tak' ? 'Włączony' : 'Wyłączony');
+
+function przyciskZakresuHtml(k, etykieta, wartosc, id) {
+  const on = wartosc === 'Tak';
+  return '<button type="button" id="' + id + '" data-k="' + k + '" value="' + esc(wartosc) + '"' +
+    ' class="scope-chip' + (on ? ' is-on' : '') + '" aria-pressed="' + on + '"' +
+    ' title="Kliknij, aby ' + (on ? 'wyłączyć' : 'włączyć') + ' zakres">' +
+    '<span class="scope-code">' + kodZakresu(k) + '</span>' +
+    '<span class="scope-check" aria-hidden="true">' + (on ? '✓' : '○') + '</span>' +
+    '<span class="scope-name">' + esc(etykieta) + '</span>' +
+    '<span class="scope-state">' + tekstZakresu(wartosc) + '</span>' +
+    '</button>';
+}
+
+function odswiezPrzyciskZakresu(el, wartosc) {
+  if (!el || !el.classList || !el.classList.contains('scope-chip')) return;
+  const on = wartosc === 'Tak';
+  el.value = wartosc;
+  el.classList.toggle('is-on', on);
+  el.setAttribute('aria-pressed', on ? 'true' : 'false');
+  el.title = 'Kliknij, aby ' + (on ? 'wyłączyć' : 'włączyć') + ' zakres';
+  const check = el.querySelector('.scope-check');
+  const state = el.querySelector('.scope-state');
+  if (check) check.textContent = on ? '✓' : '○';
+  if (state) state.textContent = tekstZakresu(wartosc);
+}
+
+/* Ustawia kontrolkę w formularzu i w kreatorze (jeśli jest widoczna). */
+function ustawKontrolke(id, wartosc) {
+  const el = $(id);
+  if (!el) return;
+  if (el.classList && el.classList.contains('scope-chip')) odswiezPrzyciskZakresu(el, wartosc);
+  else el.value = String(wartosc);
+}
+
+function odswierzLicznikZakresow() {
+  const liczba = [...ZAKRESY_KLUCZE].filter(k => s[k] === 'Tak').length;
+  const tekst = 'Włączone zakresy: ' + liczba + ' z ' + ZAKRESY_KLUCZE.size + '.';
+  ['scopeCount', 'wizScopeCount'].forEach(id => { const el = $(id); if (el) el.textContent = tekst; });
+}
+
 /* ---------- 0. PARAMETRY: edycja stawek i własne pozycje ----------
    Oryginał parametrów trzymamy w kopii, aby móc przywrócić domyślne wartości.
    Zmiany nakładamy „na miejsce” na obiekt PARAMETRY, dzięki czemu aliasy
@@ -191,18 +236,47 @@ let s = { ...DOMYSLNE };
 try { Object.assign(s, JSON.parse(localStorage.getItem('kalkulator-projektu') || '{}')); } catch (e) { }
 
 function zbudujFormularz() {
-  $('form').innerHTML = FORMULARZ.map(([tytul, pola]) =>
-    `<fieldset><legend class="${tytul === 'Praca w BIM' ? 'bim' : ''}">${tytul}</legend>` +
-    pola.map(([k, etykieta, opcje]) => `<label for="${k}">${etykieta}</label>` + (opcje
-      ? `<select id="${k}">${opcje.map(o => `<option${String(s[k]) === String(o) ? ' selected' : ''}>${o}</option>`).join('')}</select>`
-      : `<input id="${k}" type="number" min="0" step="any" value="${s[k]}">`)).join('') + '</fieldset>').join('');
+  $('form').innerHTML = FORMULARZ.map(([tytul, pola]) => {
+    const grupaZakresow = pola.length > 0 && pola.every(([k]) => ZAKRESY_KLUCZE.has(k));
+    const naglowek = `<fieldset${grupaZakresow ? ' class="scope-fieldset"' : ''}>` +
+      `<legend class="${tytul === 'Praca w BIM' ? 'bim' : ''}">${tytul}</legend>` +
+      (grupaZakresow
+        ? '<p class="scope-hint">Kliknij przycisk, aby włączyć lub odznaczyć zakres. Baza E1–E9 już zawiera standardową koncepcję, konstrukcję i instalacje.</p>'
+        : '');
+    return naglowek + pola.map(([k, etykieta, opcje]) => {
+      if (ZAKRESY_KLUCZE.has(k)) return przyciskZakresuHtml(k, etykieta, s[k], k);
+      return `<label for="${k}">${etykieta}</label>` + (opcje
+        ? `<select id="${k}">${opcje.map(o => `<option${String(s[k]) === String(o) ? ' selected' : ''}>${o}</option>`).join('')}</select>`
+        : `<input id="${k}" type="number" min="0" step="any" value="${s[k]}">`);
+    }).join('') + (grupaZakresow ? '<p class="scope-count" id="scopeCount"></p>' : '') + '</fieldset>';
+  }).join('');
   $('form').oninput = e => {
     const el = e.target, k = el.id; if (!k) return;
     s[k] = el.tagName === 'INPUT' ? (parseFloat(el.value) || 0) : el.value;
     try { localStorage.setItem('kalkulator-projektu', JSON.stringify(s)); } catch (x) { }
+    odswierzLicznikZakresow();
     pokazWyniki();
   };
+  odswierzLicznikZakresow();
 }
+
+/* Kliknięcie przycisku zakresu (formularz lub kreator) przełącza Tak/Nie.
+   Sztuczny event „input” uruchamia istniejącą ścieżkę przeliczania. */
+document.addEventListener('click', e => {
+  const btn = e.target && e.target.closest ? e.target.closest('.scope-chip') : null;
+  if (!btn || btn.disabled) return;
+  const k = btn.dataset.k || btn.id.replace(/^w_/, '');
+  if (!ZAKRESY_KLUCZE.has(k)) return;
+  const now = s[k] === 'Tak' ? 'Nie' : 'Tak';
+  s[k] = now;
+  try { localStorage.setItem('kalkulator-projektu', JSON.stringify(s)); } catch (x) { }
+  [...ZAKRESY_KLUCZE].forEach(klucz => {
+    ustawKontrolke(klucz, s[klucz]);
+    ustawKontrolke('w_' + klucz, s[klucz]);
+  });
+  odswierzLicznikZakresow();
+  btn.dispatchEvent(new Event('input', { bubbles: true }));
+});
 
 /* ---------- 2. OBLICZENIA ---------- */
 function oblicz() {

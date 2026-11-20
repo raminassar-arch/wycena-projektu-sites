@@ -76,7 +76,7 @@
       doc.open();
       doc.write('<!doctype html><html lang="pl" data-theme="light"><head><meta charset="utf-8">');
       doc.write('<base href="' + location.href + '">');
-      ['styles.css?v=1.7.0b', 'wizard.css?v=1.7.0b', 'site.css?v=1.7.0b'].forEach(function (href) {
+      ['styles.css?v=1.7.0c', 'wizard.css?v=1.7.0c', 'site.css?v=1.7.0c'].forEach(function (href) {
         doc.write('<link rel="stylesheet" href="' + href + '">');
       });
       var demoBanner = demo
