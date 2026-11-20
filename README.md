@@ -1,15 +1,24 @@
-# Kalkulator kosztów projektu 2.1.0 – wersja WWW (statyczna)
+# Kalkulator kosztów projektu 2.2.0 – wersja WWW (statyczna)
 
 Statyczna wersja kalkulatora: **same pliki HTML, CSS i JavaScript**, bez Electrona
 i bez Pythona po stronie użytkownika. Działa na dowolnym hostingu statycznym
 (GitHub Pages, Netlify, Cloudflare Pages) oraz jako osadzenie w Google Sites.
 
-Silnik wyceny jest **identyczny z wersją desktopową 2.1.0** – pliki `parametry.js`,
+Silnik wyceny jest **identyczny z wersją desktopową 2.2.0** – pliki `parametry.js`,
 `app.js` i `widoki.js` są kopiowane bez zmian z katalogu głównego projektu. Różni
 się tylko warstwa hostingu: `js/payment-web.js` udostępnia ten sam interfejs co
 `window.desktopAPI`, a PDF powstaje w oknie druku przeglądarki.
 
-Wersja desktopowa jest publikowana osobno jako `dist\Kalkulator-projektu-2.1.0-setup.exe`.
+Wersja desktopowa jest publikowana osobno jako `dist\Kalkulator-projektu-2.2.0-setup.exe`.
+
+## Co nowego w 2.2.0
+
+Wycena startuje z **0 zł**. Blokada jest zdejmowana dopiero przy pierwszej
+świadomej zmianie użytkownika: edycji pola, kliknięciu zakresu Z1–Z7, zmianie
+parametru albo własnej pozycji kosztu. Do tego momentu wszystkie kwoty są zerowe
+także w PDF. Wczytanie stanu z `localStorage` nie odblokowuje wyceny. Silnik
+`app.js`, `parametry.js` i `widoki.js` pozostaje wspólny z desktopem 2.2.0.
+Brama opłaty 100,00 zł za PDF i konfiguracja płatności bez zmian.
 
 ## Co nowego w 2.1.0
 
@@ -127,7 +136,7 @@ pushami. Polecenia z katalogu `Kalkulator-projektu-sites\`:
 
 ```powershell
 git add .
-git commit -m "Kalkulator projektu 2.1.0 WWW"
+git commit -m "Kalkulator projektu 2.2.0 WWW"
 git push -u origin main
 ```
 
@@ -135,7 +144,7 @@ Następnie w repozytorium: **Settings → Pages → Build and deployment →
 Source: Deploy from a branch → Branch: `main`, folder: `/ (root)` → Save**.
 Adres publikacji: `https://raminassar-arch.github.io/wycena-projektu-sites/`.
 
-Po każdej zmianie plików podnieś sufiks w zapytaniach `?v=2.1.0`
+Po każdej zmianie plików podnieś sufiks w zapytaniach `?v=2.2.0`
 w `index.html` oraz w `js/payment-web.js` (lista arkuszy w wydruku), aby
 przeglądarki nie trzymały starych plików z pamięci podręcznej. GitHub Pages
 ustawia `Cache-Control: max-age=600`.

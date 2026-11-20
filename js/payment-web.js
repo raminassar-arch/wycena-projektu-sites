@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Kalkulator projektu 2.1.0 – wersja statyczna (WWW / Google Sites)
+   Kalkulator projektu 2.2.0 – wersja statyczna (WWW / Google Sites)
    payment-web.js – odpowiednik mostu Electrona (window.desktopAPI).
 
    Dzięki temu pliki app.js i widoki.js pozostają identyczne jak w wersji
@@ -76,7 +76,7 @@
       doc.open();
       doc.write('<!doctype html><html lang="pl" data-theme="light"><head><meta charset="utf-8">');
       doc.write('<base href="' + location.href + '">');
-      ['styles.css?v=2.1.0', 'wizard.css?v=2.1.0', 'site.css?v=2.1.0'].forEach(function (href) {
+      ['styles.css?v=2.2.0', 'wizard.css?v=2.2.0', 'site.css?v=2.2.0'].forEach(function (href) {
         doc.write('<link rel="stylesheet" href="' + href + '">');
       });
       var demoBanner = demo
@@ -204,7 +204,7 @@
         company: appInfo.company || 'BIM architects & consultants',
         email: appInfo.email || 'raminassar.arch@gmail.com',
         year: appInfo.year || 2026,
-        version: appInfo.version || '2.1.0 · WWW'
+        version: appInfo.version || '2.2.0 · WWW'
       });
     },
     getPaymentState: function () {

@@ -15,6 +15,13 @@ const TRYB_POZWOLENIE = Object.keys(P.tryb)[0];   // „Pozwolenie na budowę”
 const TRYB_BEZ_POZWOLENIA = 'Bez pozwolenia (projekt nie wymaga pozwolenia)';
 const jestBezPozwolenia = () => s.tryb === TRYB_BEZ_POZWOLENIA;
 
+/* Wycena startuje z zerem. Blokada jest zdejmowana dopiero przy pierwszej
+   świadomej zmianie użytkownika: edycji pola, zakresu, parametru lub własnej
+   pozycji. Zmiany wewnętrzne (ustawienie pozwolenia przy starcie) jej nie
+   dotykają, więc stan z localStorage nie „odblokowuje” wyceny sam z siebie. */
+let wycenaOdblokowana = false;
+function odblokujWycene() { wycenaOdblokowana = true; }
+
 /* Pola formalności sterowane wymogiem pozwolenia. Gdy tryb to „Bez pozwolenia”
    są odznaczane, przy pozwoleniu/zgłoszeniu zaznaczane. Zmiana tych pól
    wpływa również na pozycje kosztowe w oblicz(). */
@@ -151,6 +158,7 @@ function zbudujEdytorParametrow() {
 
   $('paramEditor').oninput = e => {
     const el = e.target; if (!el.dataset.path) return;
+    odblokujWycene();
     const path = JSON.parse(el.dataset.path), v = parseFloat(el.value);
     if (!Number.isFinite(v)) return;
     setWartosc(PARAMETRY, path, v);
@@ -175,11 +183,13 @@ function renderWlasne() {
 
   el.onclick = e => {
     const b = e.target.closest('button.del'); if (!b) return;
+    odblokujWycene();
     wlasne.splice(Number(b.dataset.i), 1); saveWlasne(); renderWlasne(); pokazWyniki();
     $('paramStatus').textContent = 'Usunięto parametr.';
   };
   el.onchange = e => {
     const c = e.target.closest('input.cst-in'); if (!c) return;
+    odblokujWycene();
     wlasne[Number(c.dataset.i)].wKoszcie = c.checked; saveWlasne(); pokazWyniki();
   };
 }
@@ -190,6 +200,7 @@ function dodajWlasny() {
     $('paramStatus').textContent = 'Podaj nazwę i poprawną wartość parametru.';
     (!nazwa ? $('npNazwa') : $('npWartosc')).focus(); return;
   }
+  odblokujWycene();
   wlasne.push({ nazwa, wartosc, wKoszcie: $('npWKoszcie').checked });
   saveWlasne();
   $('npNazwa').value = ''; $('npWartosc').value = '';
@@ -198,6 +209,7 @@ function dodajWlasny() {
 }
 
 function resetParametrow() {
+  odblokujWycene();
   nadpisania = {};
   try { localStorage.removeItem(KLUCZ_PARAM); } catch (e) { }
   flattenParams(PARAMETRY_DOMYSLNE).forEach(p => setWartosc(PARAMETRY, p.path, getWartosc(PARAMETRY_DOMYSLNE, p.path)));
@@ -284,6 +296,7 @@ function zbudujFormularz() {
   }).join('');
   $('form').oninput = e => {
     const el = e.target, k = el.id; if (!k) return;
+    odblokujWycene();
     s[k] = el.tagName === 'INPUT' ? (parseFloat(el.value) || 0) : el.value;
     if (k === 'tryb') ustawFormalnosciDlaPozwolenia();
     try { localStorage.setItem('kalkulator-projektu', JSON.stringify(s)); } catch (x) { }
@@ -300,6 +313,7 @@ document.addEventListener('click', e => {
   if (!btn || btn.disabled) return;
   const k = btn.dataset.k || btn.id.replace(/^w_/, '');
   if (!ZAKRESY_KLUCZE.has(k)) return;
+  odblokujWycene();
   const now = s[k] === 'Tak' ? 'Nie' : 'Tak';
   s[k] = now;
   if (k === ZAKRES_BUDOWLANY && now === 'Tak') ustawPozwolenieDlaProjektuBudowlanego();
@@ -311,6 +325,23 @@ document.addEventListener('click', e => {
   odswierzLicznikZakresow();
   btn.dispatchEvent(new Event('input', { bubbles: true }));
 });
+
+/* Przed pierwszą zmianą użytkownika wszystkie kwoty są zerowe. Struktura
+   wyniku zostaje ta sama, żeby tabele, wydruk i podglądy czytały te same
+   pola co zwykle – zmieniają się tylko wartości pieniężne. */
+function wyzerujWycene(r) {
+  return {
+    ...r,
+    wiersze: r.wiersze.map(x => ({ ...x, v: 0 })),
+    netto: 0,
+    brutto: 0,
+    // Statusy zostają, ale koszt 0 nie zasila sum w pokazWyniki() i w widoku kreatora.
+    formalnosci: r.formalnosci.map(x => [x[0], x[1], x[2], 0, x[4]]),
+    branze: r.branze.map(x => ({ ...x, v: 0 })),
+    druk: [],
+    zakresy: r.zakresy.map(x => ({ ...x, v: 0 })),
+  };
+}
 
 /* ---------- 2. OBLICZENIA ---------- */
 function oblicz() {
@@ -438,7 +469,8 @@ function oblicz() {
     [R, 'Geodeta: inwentaryzacja powykonawcza', TAK, F.inwentaryzacjaPowykonawcza, 0],
     [R, 'Zawiadomienie o zakończeniu budowy', TAK, F.zawiadomienieZakonczenie, 0],
   ];
-  return { wiersze: wszystkie, netto, brutto, rozrzut: s.spread / 100, formalnosci, branze, druk, zakresy };
+  const wynik = { wiersze: wszystkie, netto, brutto, rozrzut: s.spread / 100, formalnosci, branze, druk, zakresy };
+  return wycenaOdblokowana ? wynik : wyzerujWycene(wynik);
 }
 
 /* ---------- 2b. SZACOWANY CZAS REALIZACJI I KANBAN ----------
@@ -666,7 +698,7 @@ function pokazWyniki() {
 
   $('grand').textContent = zl(razem);
   $('rng').textContent = 'Przedział: ' + zl(r.brutto * (1 - r.rozrzut) + przedWnioskiem + realizacja) + ' – ' + zl(r.brutto * (1 + r.rozrzut) + przedWnioskiem + realizacja);
-  $('bar').innerHTML = r.wiersze.map((x, i) => `<i style="width:${x.v / r.netto * 100}%;background:${kolor(x, i)}" title="${x.n}: ${zl(x.v)}"></i>`).join('');
+  $('bar').innerHTML = r.wiersze.map((x, i) => `<i style="width:${r.netto ? x.v / r.netto * 100 : 0}%;background:${kolor(x, i)}" title="${x.n}: ${zl(x.v)}"></i>`).join('');
   const podzial = [['Projekt i usługi architekta (brutto)', r.brutto], ['w tym praca w BIM (netto)', kosztBim]];
   if (kosztBranze) podzial.push(['w tym projekty branżowe (netto)', kosztBranze]);
   if (kosztZakresy) podzial.push(['w tym zakresy opracowania (netto)', kosztZakresy]);
@@ -676,6 +708,7 @@ function pokazWyniki() {
 
   // Ostrzeżenia o niespójnych danych.
   const uwagi = [];
+  if (!wycenaOdblokowana) uwagi.unshift('Wycena jest zerowa do pierwszej zmiany: edytuj dowolne pole lub zaznacz zakres, aby rozpocząć.');
   if (s.tryb.includes('bez projektu') && (s.pz > 70 || s.obj !== Object.keys(P.obiekty)[0])) uwagi.push('Tryb „bez projektu” dotyczy domu wolnostojącego do 70 m² zabudowy. Sprawdź warunki.');
   if (s.podst === 'WZ - nowy wniosek') uwagi.push('Od 1.09.2026 nowe WZ są możliwe tylko w gminach z planem ogólnym. Sprawdź to w gminie przed wnioskiem.');
   if (s.podst === 'Do ustalenia') uwagi.push('Ustal w gminie, czy działka ma MPZP i czy gmina uchwaliła plan ogólny.');
@@ -696,7 +729,7 @@ function pokazWyniki() {
 
   // Tabela etapów.
   $('stg').innerHTML = '<tr><th>Etap</th><th class="n">Netto</th><th class="n">Brutto</th><th class="n">Udział</th></tr>' +
-    r.wiersze.map((x, i) => `<tr><td><span class="sw" style="background:${kolor(x, i)}"></span>${x.k}  ${x.n}</td><td class="n">${zl(x.v)}</td><td class="n">${zl(x.v * (1 + s.vat / 100))}</td><td class="n">${(x.v / r.netto * 100).toFixed(1)}%</td></tr>`).join('') +
+    r.wiersze.map((x, i) => `<tr><td><span class="sw" style="background:${kolor(x, i)}"></span>${x.k}  ${x.n}</td><td class="n">${zl(x.v)}</td><td class="n">${zl(x.v * (1 + s.vat / 100))}</td><td class="n">${(r.netto ? x.v / r.netto * 100 : 0).toFixed(1)}%</td></tr>`).join('') +
     `<tr class="sum"><td>Razem projekt</td><td class="n">${zl(r.netto)}</td><td class="n">${zl(r.brutto)}</td><td class="n">${zl(r.netto / (s.pu || 1))}/m²</td></tr>`;
 
   // Tabela formalności (pozycje, które nie dotyczą, są pomijane).

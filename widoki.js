@@ -107,6 +107,7 @@
   $('wizQuestions').oninput = e => {
     const klucz = e.target.dataset.k;
     if (!klucz) return;
+    odblokujWycene();
     s[klucz] = e.target.tagName === 'INPUT' ? (parseFloat(e.target.value) || 0) : e.target.value;
     if (klucz === 'tryb') ustawFormalnosciDlaPozwolenia();
     try { localStorage.setItem('kalkulator-projektu', JSON.stringify(s)); } catch (x) { /* brak pamięci */ }
