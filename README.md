@@ -13,6 +13,13 @@ Wersja desktopowa jest publikowana osobno jako `dist\Kalkulator-projektu-2.3.0-s
 
 ## Co nowego w 2.3.0
 
+- **Koszty operacyjne pracowni** – cztery edytowalne stawki miesięczne: urządzenia i serwisowanie (600 zł), lokal i media (1 800 zł), zaopatrzenie biura (300 zł), paliwo i dojazdy (500 zł). Iloczyn stawki i szacowanego czasu inwestycji (`max(1, dniRazem / 30)` mies.) trafia do `netto`/`brutto`, podziału kosztów, rat i PDF. Osobna tabela: `#operacyjneResult`.
+- **Harmonogram pracy Project Managera** – pola `dataStart` (domyślnie data lokalna dziś) i `urlopy` przyjmują zakresy `RRRR-MM-DD:RRRR-MM-DD` oddzielone przecinkiem, średnikiem lub nową linią. Zadania kanbanu otrzymują konkretne daty w dniach roboczych; weekendy i urlopy przesuwają planowane zakończenie.
+- **Wykresy w raporcie** – nowy panel `#harmonogramResult` zawiera wykres Gantt (zadania, miesiące, cieniowanie urlopów) oraz słupki obciążenia miesięcznego (praca + urlop). Oba trafiają do wydruku A4 i do nagłówka `printMeta`.
+- **Bez zmian** – start wyceny od 0 do pierwszej zmiany użytkownika, 10 kroków kreatora z krokiem „Faza projektu (Z1–Z7)”, Z7, licencja, brama 100,00 zł za PDF i `updates.enabled: false`.
+
+## Co nowego w 2.2.0
+
 Wycena startuje z **0 zł**. Blokada jest zdejmowana dopiero przy pierwszej
 świadomej zmianie użytkownika: edycji pola, kliknięciu zakresu Z1–Z7, zmianie
 parametru albo własnej pozycji kosztu. Do tego momentu wszystkie kwoty są zerowe
