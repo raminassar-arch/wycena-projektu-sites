@@ -105,9 +105,10 @@ Następnie w repozytorium: **Settings → Pages → Build and deployment →
 Source: Deploy from a branch → Branch: `main`, folder: `/ (root)` → Save**.
 Adres publikacji: `https://raminassar-arch.github.io/wycena-projektu-sites/`.
 
-Po każdej zmianie plików podnieś numer wersji w zapytaniach `?v=1.7.0`
-w `index.html`, aby przeglądarki nie trzymały starych plików z pamięci
-podręcznej.
+Po każdej zmianie plików podnieś sufiks w zapytaniach `?v=1.7.0b`
+w `index.html` oraz w `js/payment-web.js` (lista arkuszy w wydruku), aby
+przeglądarki nie trzymały starych plików z pamięci podręcznej. GitHub Pages
+ustawia `Cache-Control: max-age=600`.
 
 ---
 
