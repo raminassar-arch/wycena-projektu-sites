@@ -79,7 +79,10 @@
       ['styles.css?v=1.7.0', 'wizard.css?v=1.7.0', 'site.css?v=1.7.0'].forEach(function (href) {
         doc.write('<link rel="stylesheet" href="' + href + '">');
       });
-      doc.write('</head><body class="pdf-render">' + clone.outerHTML + '</body></html>');
+      var demoBanner = demo
+        ? '<div style="border:2px solid #8a6b20;background:#fbf4df;color:#5b4410;padding:8px 12px;margin:0 0 10px;font:700 12px Arial,sans-serif;text-align:center">WERSJA DEMONSTRACYJNA – RAPORT BEZ OPŁATY</div>'
+        : '';
+      doc.write('</head><body class="pdf-render">' + demoBanner + clone.outerHTML + '</body></html>');
       doc.close();
 
       setTimeout(function () {
