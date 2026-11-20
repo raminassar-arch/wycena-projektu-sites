@@ -1,4 +1,4 @@
-/* Konfiguracja wersji WWW kalkulatora 1.7.1.
+/* Konfiguracja wersji WWW kalkulatora 2.0.0.
  *
  * paymentApi – adres serwera płatności zgodnego z API v1 projektu
  *              (POST /api/payment/create, GET /api/payment/status/:id,
@@ -22,6 +22,6 @@ window.KALKULATOR_CONFIG = {
     company: 'BIM architects & consultants',
     email: 'raminassar.arch@gmail.com',
     year: 2026,
-    version: '1.7.1 · WWW'
+    version: '2.0.0 · WWW'
   }
 };

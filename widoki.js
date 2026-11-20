@@ -11,15 +11,15 @@
 
   /* Kolejność pytań w kreatorze – grupy pól z formularza. */
   const KROKI = [
-    { tytul: 'Rodzaj projektu (Z1–Z6)', opis: 'Wybierz fazy i rodzaje projektu. Kliknij przycisk, aby włączyć lub odznaczyć zakres. Projekt bez pozwolenia (np. wnętrze) wybierasz w kroku „Formalności”.', pola: ZAKRESY.map(([k]) => k) },
-    { tytul: 'Dane obiektu', opis: 'Rodzaj budynku, powierzchnia, kondygnacje.', pola: ['obj', 'char', 'pu', 'pz', 'kond', 'podp', 'geo', 'zab'] },
-    { tytul: 'Projekt i usługi', opis: 'Typ projektu, lokalizacja, zakres usług dodatkowych.', pola: ['typ', 'gcena', 'lok', 'skompl', 'instal', 'wyk', 'kosztorys', 'wiz'] },
+    { tytul: 'Faza projektu (Z1–Z6)', opis: 'Wybierz fazy i rodzaje projektu. Kliknij przycisk, aby włączyć lub odznaczyć zakres. Projekt bez pozwolenia (np. wnętrze, koncepcja, branża) wybierasz w kroku „Formalności – pozwolenie”.', pola: ZAKRESY.map(([k]) => k) },
+    { tytul: 'Dane projektu', opis: 'Rodzaj budynku, powierzchnia, kondygnacje.', pola: ['obj', 'char', 'pu', 'pz', 'kond', 'podp', 'geo', 'zab'] },
+    { tytul: 'Zakres', opis: 'Typ projektu, lokalizacja i usługi dodatkowe.', pola: ['typ', 'gcena', 'lok', 'skompl', 'instal', 'wyk', 'kosztorys', 'wiz'] },
+    { tytul: 'Formalności – pozwolenie i dokumenty', opis: 'Wybierz tryb formalny. Przy pozwoleniu lub zgłoszeniu dokumenty i czynności urzędowe zaznaczają się automatycznie; przy „Bez pozwolenia” są odznaczane i nie są liczone.', pola: ['podst', 'tryb', 'pelnom', 'bliska', 'mapa', 'przyl', 'zjazd', 'wodno', 'rolna'] },
+    { tytul: 'Zespół projektowy', opis: 'Obsada ról skraca lub wydłuża szacowany czas; koszty osobowe są opcją dodatkową.', pola: ['zKier', 'zArch', 'zProj', 'zBim', 'zAsyst', 'zEkipa', 'zKoszty'] },
     { tytul: 'Praca w BIM', opis: 'Modelowanie, zakres branż, formaty i wymagania.', pola: ['bim', 'lod', 'zakres', 'koord', 'eir', 'ifc', 'd5', 'wizn', 'cde'] },
     { tytul: 'Projekty branżowe', opis: 'Dodatkowe opracowania instalacyjne i specjalistyczne poza podstawą E1–E9.', pola: P.branze.map(([k]) => 'br_' + k) },
     { tytul: 'Koszty drukowania', opis: 'Komplety, arkusze i oprawa dokumentacji dla inwestora i urzędu.', pola: ['drukKomplet', 'drukA4', 'drukA3', 'drukA1', 'drukOprawa'] },
-    { tytul: 'Zespół projektowy', opis: 'Obsada ról skraca lub wydłuża szacowany czas; koszty osobowe są opcją dodatkową.', pola: ['zKier', 'zArch', 'zProj', 'zBim', 'zAsyst', 'zEkipa', 'zKoszty'] },
     { tytul: 'Harmonogram płatności', opis: 'Rozłożenie kosztu inwestycji na raty: co miesiąc, co kwartał, co pół roku lub według etapów.', pola: ['platnosc'] },
-    { tytul: 'Formalności – plan i wnioski', opis: 'Podstawa planistyczna, tryb i uzgodnienia. Wybierz „Bez pozwolenia” dla wnętrz, koncepcji, projektów wykonawczych i branżowych – opłata skarbowa oraz zgłoszenie nie są naliczane.', pola: ['podst', 'tryb', 'pelnom', 'bliska', 'mapa', 'przyl', 'zjazd', 'wodno', 'rolna'] },
     { tytul: 'Formalności – realizacja i koszty', opis: 'Nadzór, rozrzut cen i podatek VAT.', pola: ['kb', 'inz', 'kosztm2', 'spread', 'vat'] },
   ];
 
@@ -108,6 +108,7 @@
     const klucz = e.target.dataset.k;
     if (!klucz) return;
     s[klucz] = e.target.tagName === 'INPUT' ? (parseFloat(e.target.value) || 0) : e.target.value;
+    if (klucz === 'tryb') ustawFormalnosciDlaPozwolenia();
     try { localStorage.setItem('kalkulator-projektu', JSON.stringify(s)); } catch (x) { /* brak pamięci */ }
     ustawKontrolke(klucz, s[klucz]);
     odswierzLicznikZakresow();

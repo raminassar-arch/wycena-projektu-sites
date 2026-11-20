@@ -1,23 +1,31 @@
-# Kalkulator kosztów projektu 1.7.1 – wersja WWW (statyczna)
+# Kalkulator kosztów projektu 2.0.0 – wersja WWW (statyczna)
 
 Statyczna wersja kalkulatora: **same pliki HTML, CSS i JavaScript**, bez Electrona
 i bez Pythona po stronie użytkownika. Działa na dowolnym hostingu statycznym
 (GitHub Pages, Netlify, Cloudflare Pages) oraz jako osadzenie w Google Sites.
 
-Silnik wyceny jest **identyczny z wersją desktopową 1.7.2** – pliki `parametry.js`,
+Silnik wyceny jest **identyczny z wersją desktopową 2.0.0** – pliki `parametry.js`,
 `app.js` i `widoki.js` są kopiowane bez zmian z katalogu głównego projektu. Różni
 się tylko warstwa hostingu: `js/payment-web.js` udostępnia ten sam interfejs co
 `window.desktopAPI`, a PDF powstaje w oknie druku przeglądarki.
 
-Wersja desktopowa jest publikowana osobno jako `dist\Kalkulator-projektu-1.7.2-setup.exe`.
+Wersja desktopowa jest publikowana osobno jako `dist\Kalkulator-projektu-2.0.0-setup.exe`.
 
-## Co nowego w 1.7.1
+## Co nowego w 2.0.0
+
+Kreator ma nową kolejność: **Faza projektu (Z1–Z6) → Dane projektu → Zakres →
+Formalności – pozwolenie i dokumenty → Zespół i pozostałe elementy**. Wybór
+trybu formalnego steruje dokumentami automatycznie: przy pozwoleniu/zgłoszeniu
+zaznaczane są pełnomocnictwo, mapa do celów projektowych, warunki przyłączenia,
+zjazd, pozwolenie wodnoprawne, wyłączenie gruntu z produkcji, kierownik budowy
+i inspektor nadzoru wraz z powiązanymi pozycjami kosztowymi; przy „Bez
+pozwolenia” są one odznaczane.
 
 Dodano tryb formalny **„Bez pozwolenia (projekt nie wymaga pozwolenia)”** w
-sekcji `Formalności → Tryb formalny` oraz w kroku kreatora „Formalności – plan
-i wnioski". Dotyczy wnętrz, koncepcji, projektów wykonawczych i branżowych,
-które nie wymagają decyzji administracyjnej. W tym trybie nie są naliczane:
-opłata skarbowa za pozwolenie, uzgodnienie w ZUD, zgłoszenie robót i
+sekcji `Formalności → Tryb formalny` oraz w kroku kreatora „Formalności –
+pozwolenie i dokumenty”. Dotyczy wnętrz, koncepcji, projektów wykonawczych i
+branżowych, które nie wymagają decyzji administracyjnej. W tym trybie nie są
+naliczane: opłata skarbowa za pozwolenie, uzgodnienie w ZUD, zgłoszenie robót i
 zaświadczenie o braku sprzeciwu; harmonogram nie tworzy zadania U7. Cena
 opracowania pozostaje bez zmian (współczynnik trybu 1,00).
 
@@ -109,7 +117,7 @@ pushami. Polecenia z katalogu `Kalkulator-projektu-sites\`:
 
 ```powershell
 git add .
-git commit -m "Kalkulator projektu 1.7.1 WWW"
+git commit -m "Kalkulator projektu 2.0.0 WWW"
 git push -u origin main
 ```
 
@@ -117,7 +125,7 @@ Następnie w repozytorium: **Settings → Pages → Build and deployment →
 Source: Deploy from a branch → Branch: `main`, folder: `/ (root)` → Save**.
 Adres publikacji: `https://raminassar-arch.github.io/wycena-projektu-sites/`.
 
-Po każdej zmianie plików podnieś sufiks w zapytaniach `?v=1.7.1`
+Po każdej zmianie plików podnieś sufiks w zapytaniach `?v=2.0.0`
 w `index.html` oraz w `js/payment-web.js` (lista arkuszy w wydruku), aby
 przeglądarki nie trzymały starych plików z pamięci podręcznej. GitHub Pages
 ustawia `Cache-Control: max-age=600`.

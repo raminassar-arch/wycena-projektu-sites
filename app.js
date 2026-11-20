@@ -14,6 +14,21 @@ const TRYB_POZWOLENIE = Object.keys(P.tryb)[0];   // „Pozwolenie na budowę”
    nie nalicza opłaty skarbowej, zgłoszenia ani zaświadczenia o braku sprzeciwu. */
 const TRYB_BEZ_POZWOLENIA = 'Bez pozwolenia (projekt nie wymaga pozwolenia)';
 const jestBezPozwolenia = () => s.tryb === TRYB_BEZ_POZWOLENIA;
+
+/* Pola formalności sterowane wymogiem pozwolenia. Gdy tryb to „Bez pozwolenia”
+   są odznaczane, przy pozwoleniu/zgłoszeniu zaznaczane. Zmiana tych pól
+   wpływa również na pozycje kosztowe w oblicz(). */
+const POLA_POZWOLENIA = ['pelnom', 'mapa', 'przyl', 'zjazd', 'wodno', 'rolna', 'kb', 'inz'];
+
+function ustawFormalnosciDlaPozwolenia() {
+  const docel = jestBezPozwolenia() ? 'Nie' : 'Tak';
+  POLA_POZWOLENIA.forEach(k => {
+    s[k] = docel;
+    ustawKontrolke(k, s[k]);
+    ustawKontrolke('w_' + k, s[k]);
+  });
+  try { localStorage.setItem('kalkulator-projektu', JSON.stringify(s)); } catch (x) { }
+}
 /* Harmonogram płatności: etykiety w formularzu oraz odstęp w miesiącach.
    Ostatni tryb (0) oznacza raty przypisane do 4 etapów z kanbanu. */
 const PLATNOSCI = ['Co miesiąc', 'Co 3 miesiące', 'Co 6 miesięcy', 'Według etapów'];
@@ -257,6 +272,7 @@ function zbudujFormularz() {
   $('form').oninput = e => {
     const el = e.target, k = el.id; if (!k) return;
     s[k] = el.tagName === 'INPUT' ? (parseFloat(el.value) || 0) : el.value;
+    if (k === 'tryb') ustawFormalnosciDlaPozwolenia();
     try { localStorage.setItem('kalkulator-projektu', JSON.stringify(s)); } catch (x) { }
     odswierzLicznikZakresow();
     pokazWyniki();
@@ -795,6 +811,7 @@ function pokazWyniki() {
 }
 
 zbudujFormularz();
+ustawFormalnosciDlaPozwolenia();
 zbudujEdytorParametrow();
 renderWlasne();
 /* ---------- opłata 100 zł za raport PDF ---------- */
