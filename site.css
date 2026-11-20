@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Kalkulator projektu 2.0.0 – wersja WWW
+   Kalkulator projektu 2.1.0 – wersja WWW
    Warstwa stylu wizualnego zgodna z PAB cyfrowa (sites/app.css):
    ciemna zieleń + złoty akcent, jasne tło, karty, zaokrąglenia, miękki cień.
    Logika i znaczniki kalkulatora pozostają bez zmian.
@@ -160,7 +160,7 @@ select:focus, input:focus, button:focus-visible {
 .btn[disabled] { opacity: 0.55; cursor: not-allowed; }
 #updateBtn { display: none !important; }
 
-/* Przełączniki zakresów Z1–Z6 – akcent złoty zgodny z PAB. */
+/* Przełączniki zakresów Z1–Z7 – akcent złoty zgodny z PAB. */
 .scope-chip:hover { border-color: var(--green-mid); background: var(--green-pale); }
 .scope-chip.is-on { border-color: var(--gold); background: var(--gold-pale); box-shadow: inset 3px 0 0 var(--gold); }
 .scope-chip.is-on .scope-code { color: var(--gold-text); border-color: var(--gold); }

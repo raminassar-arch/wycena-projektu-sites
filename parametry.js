@@ -78,7 +78,9 @@ const PARAMETRY = {
   /* --- Zakresy opracowania (rodzaje projektu) jako osobne opcje ---
      Kazdy zakres to niezalezny pakiet wyceny, ktory mozna wlaczyc obok bazy E1-E9.
      udzial – czesc bazy projektu; stawkaM2 – stawka zl/m2 powierzchni uzytkowej
-     (gdy podana, ma pierwszenstwo przed udzialem). [S] szacunki do weryfikacji. */
+     (gdy podana, ma pierwszenstwo przed udzialem). [S] szacunki do weryfikacji.
+     Z7 „Projekt budowlany (PB)” zawsze wymaga pozwolenia – jego zaznaczenie
+     ustawia tryb „Pozwolenie na budowę” i zaznacza dokumenty pozwolenia. */
   zakresy: [
     ['zpKoncepcyjny',   'Projekt koncepcyjny (K)',             0.25, 0],
     ['zpWykonawczy',    'Projekt wykonawczy (W)',              0.40, 0],
@@ -86,6 +88,7 @@ const PARAMETRY = {
     ['zpWnetrza',       'Projekt wnętrz',                      0,   25],
     ['zpInstalacyjny',  'Projekt instalacyjny (osobno)',       0.18, 0],
     ['zpKonstrukcyjny', 'Projekt konstrukcyjny (osobno)',      0.12, 0],
+    ['zpBudowlany',     'Projekt budowlany (PB)',              0.40, 0],
   ],
 
   /* --- Koszty drukowania dokumentacji projektowej [S] --- */
@@ -113,6 +116,7 @@ const PARAMETRY = {
     zakresyDni: {              // dodatkowy czas dla wybranych zakresów opracowania [dni robocze]
       zpKoncepcyjny: 12, zpWykonawczy: 20, zpWielobranzowy: 18,
       zpWnetrza: 15, zpInstalacyjny: 12, zpKonstrukcyjny: 10,
+      zpBudowlany: 22,
     },
     wspSkomplikowanie: { 'Prosty': 0.85, 'Standardowy': 1.00, 'Złożony': 1.25, 'Bardzo złożony': 1.50 },
     wspLokalizacja: { 'Warszawa': 1.15, 'Miasto >200 tys.': 1.10, 'Miasto 50–200 tys.': 1.00, 'Miasto <50 tys.': 0.95, 'Wieś / mała gmina': 0.90 },

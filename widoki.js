@@ -11,7 +11,7 @@
 
   /* Kolejność pytań w kreatorze – grupy pól z formularza. */
   const KROKI = [
-    { tytul: 'Faza projektu (Z1–Z6)', opis: 'Wybierz fazy i rodzaje projektu. Kliknij przycisk, aby włączyć lub odznaczyć zakres. Projekt bez pozwolenia (np. wnętrze, koncepcja, branża) wybierasz w kroku „Formalności – pozwolenie”.', pola: ZAKRESY.map(([k]) => k) },
+    { tytul: 'Faza projektu (Z1–Z7)', opis: 'Wybierz fazy i rodzaje projektu. Kliknij przycisk, aby włączyć lub odznaczyć zakres. „Projekt budowlany (PB)” automatycznie ustawia tryb „Pozwolenie na budowę” i zaznacza dokumenty pozwolenia; projekty bez pozwolenia (np. wnętrze, koncepcja, branża) wybierasz w kroku „Formalności – pozwolenie”.', pola: ZAKRESY.map(([k]) => k) },
     { tytul: 'Dane projektu', opis: 'Rodzaj budynku, powierzchnia, kondygnacje.', pola: ['obj', 'char', 'pu', 'pz', 'kond', 'podp', 'geo', 'zab'] },
     { tytul: 'Zakres', opis: 'Typ projektu, lokalizacja i usługi dodatkowe.', pola: ['typ', 'gcena', 'lok', 'skompl', 'instal', 'wyk', 'kosztorys', 'wiz'] },
     { tytul: 'Formalności – pozwolenie i dokumenty', opis: 'Wybierz tryb formalny. Przy pozwoleniu lub zgłoszeniu dokumenty i czynności urzędowe zaznaczają się automatycznie; przy „Bez pozwolenia” są odznaczane i nie są liczone.', pola: ['podst', 'tryb', 'pelnom', 'bliska', 'mapa', 'przyl', 'zjazd', 'wodno', 'rolna'] },

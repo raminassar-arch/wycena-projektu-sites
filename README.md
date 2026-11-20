@@ -1,15 +1,25 @@
-# Kalkulator kosztów projektu 2.0.0 – wersja WWW (statyczna)
+# Kalkulator kosztów projektu 2.1.0 – wersja WWW (statyczna)
 
 Statyczna wersja kalkulatora: **same pliki HTML, CSS i JavaScript**, bez Electrona
 i bez Pythona po stronie użytkownika. Działa na dowolnym hostingu statycznym
 (GitHub Pages, Netlify, Cloudflare Pages) oraz jako osadzenie w Google Sites.
 
-Silnik wyceny jest **identyczny z wersją desktopową 2.0.0** – pliki `parametry.js`,
+Silnik wyceny jest **identyczny z wersją desktopową 2.1.0** – pliki `parametry.js`,
 `app.js` i `widoki.js` są kopiowane bez zmian z katalogu głównego projektu. Różni
 się tylko warstwa hostingu: `js/payment-web.js` udostępnia ten sam interfejs co
 `window.desktopAPI`, a PDF powstaje w oknie druku przeglądarki.
 
-Wersja desktopowa jest publikowana osobno jako `dist\Kalkulator-projektu-2.0.0-setup.exe`.
+Wersja desktopowa jest publikowana osobno jako `dist\Kalkulator-projektu-2.1.0-setup.exe`.
+
+## Co nowego w 2.1.0
+
+Dodano siódmą fazę **„Projekt budowlany (PB)”** (`zpBudowlany`, udział 0,40 bazy)
+w pierwszym kroku kreatora **Faza projektu (Z1–Z7)** i w formularzu. To projekt
+zawsze wymagający pozwolenia – jego zaznaczenie automatycznie ustawia tryb
+„Pozwolenie na budowę” i zaznacza pełnomocnictwo, mapę, przyłącza, zjazd,
+pozwolenie wodnoprawne, grunt rolny, kierownika i inspektora wraz z kosztami.
+Silnik `app.js`, `parametry.js` i `widoki.js` pozostaje wspólny z desktopem 2.1.0.
+Brama opłaty 100,00 zł za PDF i konfiguracja płatności bez zmian.
 
 ## Co nowego w 2.0.0
 
@@ -46,16 +56,16 @@ zapobiega przetwarzaniu przez Jekyll.
 
 | Warstwa | Plik | Rola |
 | --- | --- | --- |
-| Dane | `parametry.js` | stawki E1–E9, Z1–Z6, branze, czas, zespół – bez zmian |
-| Silnik | `app.js` | `oblicz()`, `obliczCzas()`, `obliczPlatnosci()`, `obliczKosztyZespolu()`; przyciski Z1–Z6 |
-| Kreator | `widoki.js` | 10 kroków Q&A: pierwszy to „Rodzaj projektu (Z1–Z6)”, potem dane obiektu |
+| Dane | `parametry.js` | stawki E1–E9, Z1–Z7, branze, czas, zespół – bez zmian |
+| Silnik | `app.js` | `oblicz()`, `obliczCzas()`, `obliczPlatnosci()`, `obliczKosztyZespolu()`; przyciski Z1–Z7 |
+| Kreator | `widoki.js` | 10 kroków Q&A: pierwszy to „Faza projektu (Z1–Z7)”, potem dane projektu |
 | Wygląd kalkulatora | `styles.css`, `wizard.css` | identyczny jak w desktopie, wraz z blokadą wyników i regułami druku |
 | Styl WWW | `site.css` | paleta PAB sites: ciemna zieleń + złoto, karty, topbar, stopka |
 | Most płatności | `js/payment-web.js` | odpowiednik Electron API: płatność, anulowanie, PDF przez druk |
 | Konfiguracja | `js/config.js` | adres API, cena, tryb demo, dane autora |
 | Osadzanie | `embed.html` | generator kodu iframe dla Google Sites |
 
-Zakresy Z1–Z6 są sześcioma niezależnymi pakietami dodatkowymi. Baza E1–E9
+Zakresy Z1–Z7 są siedmioma niezależnymi pakietami dodatkowymi. Baza E1–E9
 zawiera już standardową koncepcję, konstrukcję i instalacje – w kalkulatorze
 jest ostrzeżenie przed podwójnym zamówieniem. Projekt wnętrz występuje tylko
 jako zakres Z4 – usunięto jego duplikat z „Projektów branżowych”.
@@ -67,9 +77,9 @@ jako zakres Z4 – usunięto jego duplikat z „Projektów branżowych”.
 Kalkulator i kreator działają w całości w przeglądarce:
 
 * 10 kroków kreatora z przeliczeniem na żywo – pierwszy krok to wybór rodzaju
-  projektu Z1–Z6 przyciskami do włączania i odznaczania,
+  projektu Z1–Z7 przyciskami do włączania i odznaczania,
 * edycja parametrów i własne pozycje kosztów (zapis w `localStorage`),
-* koszty etapów, formalności, opłaty, wydruk, zakresy Z1–Z6, branze,
+* koszty etapów, formalności, opłaty, wydruk, zakresy Z1–Z7, branze,
 * czas realizacji (Kanban), obsada zespołu, harmonogram płatności.
 
 **Szczegółowe wyniki w widoku „Kalkulator” oraz PDF są zablokowane do opłaty.**
@@ -117,7 +127,7 @@ pushami. Polecenia z katalogu `Kalkulator-projektu-sites\`:
 
 ```powershell
 git add .
-git commit -m "Kalkulator projektu 2.0.0 WWW"
+git commit -m "Kalkulator projektu 2.1.0 WWW"
 git push -u origin main
 ```
 
@@ -125,7 +135,7 @@ Następnie w repozytorium: **Settings → Pages → Build and deployment →
 Source: Deploy from a branch → Branch: `main`, folder: `/ (root)` → Save**.
 Adres publikacji: `https://raminassar-arch.github.io/wycena-projektu-sites/`.
 
-Po każdej zmianie plików podnieś sufiks w zapytaniach `?v=2.0.0`
+Po każdej zmianie plików podnieś sufiks w zapytaniach `?v=2.1.0`
 w `index.html` oraz w `js/payment-web.js` (lista arkuszy w wydruku), aby
 przeglądarki nie trzymały starych plików z pamięci podręcznej. GitHub Pages
 ustawia `Cache-Control: max-age=600`.

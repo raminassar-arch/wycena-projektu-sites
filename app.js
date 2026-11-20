@@ -29,6 +29,19 @@ function ustawFormalnosciDlaPozwolenia() {
   });
   try { localStorage.setItem('kalkulator-projektu', JSON.stringify(s)); } catch (x) { }
 }
+/* „Projekt budowlany” (Z7) to opracowanie zawsze wymagające pozwolenia.
+   Zaznaczenie tej fazy wymusza tryb „Pozwolenie na budowę”, co z kolei
+   automatycznie zaznacza dokumenty i pozycje kosztowe pozwolenia. */
+const ZAKRES_BUDOWLANY = 'zpBudowlany';
+
+function ustawPozwolenieDlaProjektuBudowlanego() {
+  if (s[ZAKRES_BUDOWLANY] !== 'Tak') return;
+  s.tryb = TRYB_POZWOLENIE;
+  ustawKontrolke('tryb', s.tryb);
+  ustawKontrolke('w_tryb', s.tryb);
+  ustawFormalnosciDlaPozwolenia();
+}
+
 /* Harmonogram płatności: etykiety w formularzu oraz odstęp w miesiącach.
    Ostatni tryb (0) oznacza raty przypisane do 4 etapów z kanbanu. */
 const PLATNOSCI = ['Co miesiąc', 'Co 3 miesiące', 'Co 6 miesięcy', 'Według etapów'];
@@ -40,7 +53,7 @@ const ZAKRESY = P.zakresy;
 const klucze = Object.keys;
 const esc = v => String(v).replace(/&/g, '&amp;').replace(/'/g, '&#39;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 
-/* Zakresy Z1–Z6 są w formularzu i w kreatorze przyciskami do włączania
+/* Zakresy Z1–Z7 są w formularzu i w kreatorze przyciskami do włączania
    i odznaczania (zamiast listy Tak/Nie). Jeden kod obsługuje oba widoki. */
 const ZAKRESY_KLUCZE = new Set(ZAKRESY.map(([k]) => k));
 const kodZakresu = k => 'Z' + (ZAKRESY.findIndex(([klucz]) => klucz === k) + 1);
@@ -260,7 +273,7 @@ function zbudujFormularz() {
     const naglowek = `<fieldset${grupaZakresow ? ' class="scope-fieldset"' : ''}>` +
       `<legend class="${tytul === 'Praca w BIM' ? 'bim' : ''}">${tytul}</legend>` +
       (grupaZakresow
-        ? '<p class="scope-hint">Kliknij przycisk, aby włączyć lub odznaczyć zakres. Baza E1–E9 już zawiera standardową koncepcję, konstrukcję i instalacje. Jeśli projekt nie wymaga pozwolenia (np. wnętrze, koncepcja, branża), wybierz tryb „Bez pozwolenia” w Formalnościach – opłata skarbowa i zgłoszenie nie zostaną naliczone.</p>'
+        ? '<p class="scope-hint">Kliknij przycisk, aby włączyć lub odznaczyć zakres. Baza E1–E9 już zawiera standardową koncepcję, konstrukcję i instalacje. Zaznaczenie „Projekt budowlany (PB)” automatycznie ustawia tryb „Pozwolenie na budowę” i zaznacza dokumenty pozwolenia. Jeśli projekt nie wymaga pozwolenia (np. wnętrze, koncepcja, branża), wybierz tryb „Bez pozwolenia” w Formalnościach – opłata skarbowa i zgłoszenie nie zostaną naliczone.</p>'
         : '');
     return naglowek + pola.map(([k, etykieta, opcje]) => {
       if (ZAKRESY_KLUCZE.has(k)) return przyciskZakresuHtml(k, etykieta, s[k], k);
@@ -289,6 +302,7 @@ document.addEventListener('click', e => {
   if (!ZAKRESY_KLUCZE.has(k)) return;
   const now = s[k] === 'Tak' ? 'Nie' : 'Tak';
   s[k] = now;
+  if (k === ZAKRES_BUDOWLANY && now === 'Tak') ustawPozwolenieDlaProjektuBudowlanego();
   try { localStorage.setItem('kalkulator-projektu', JSON.stringify(s)); } catch (x) { }
   [...ZAKRESY_KLUCZE].forEach(klucz => {
     ustawKontrolke(klucz, s[klucz]);
@@ -373,7 +387,7 @@ function oblicz() {
   }
 
   // Zakresy opracowania – dodatkowe pakiety projektu (koncepcja, wykonawczy,
-  // wielobranżowy, wnętrza, instalacje, konstrukcja). Wycena z bazy E1–E9
+  // wielobranżowy, wnętrza, instalacje, konstrukcja, budowlany). Wycena z bazy E1–E9
   // albo ze stawki zł/m² – niezależnie od pozostałych usług.
   const zakresy = ZAKRESY.map(([klucz, nazwa, udzial, stawkaM2], i) => ({
     k: 'Z' + (i + 1), klucz, n: nazwa,
@@ -673,6 +687,8 @@ function pokazWyniki() {
     ') są dodatkowymi pakietami. Baza E1–E9 już obejmuje standardową koncepcję, konstrukcję i instalacje – sprawdź, czy nie zamawiasz ich podwójnie.');
   if (jestBezPozwolenia()) {
     uwagi.push('Tryb „bez pozwolenia”: pominięto opłatę skarbową za pozwolenie, zgłoszenie robót i zaświadczenie o braku sprzeciwu. Dotyczy m.in. wnętrz, koncepcji, projektów wykonawczych i opracowań branżowych nie wymagających decyzji administracyjnej.');
+  } else if (s[ZAKRES_BUDOWLANY] === 'Tak') {
+    uwagi.push('„Projekt budowlany (PB)” wymaga pozwolenia – tryb „Pozwolenie na budowę” i dokumenty pozwolenia zostały zaznaczone automatycznie.');
   } else if (aktywneZakresy.length && s.tryb === TRYB_POZWOLENIE) {
     uwagi.push('Zaznaczone zakresy mogą dotyczyć projektów niewymagających pozwolenia (np. wnętrza, koncepcja, branże). Jeśli decyzja nie jest potrzebna, wybierz tryb „Bez pozwolenia” w Formalnościach – opłata skarbowa i zgłoszenie nie zostaną naliczone.');
   }
@@ -812,6 +828,7 @@ function pokazWyniki() {
 
 zbudujFormularz();
 ustawFormalnosciDlaPozwolenia();
+ustawPozwolenieDlaProjektuBudowlanego();
 zbudujEdytorParametrow();
 renderWlasne();
 /* ---------- opłata 100 zł za raport PDF ---------- */
