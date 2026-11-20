@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0C3B2C">
-<meta name="description" content="Kalkulator kosztów projektu architektonicznego 2.2.0 – kreator, wycena, czas, zespół i harmonogram. Statyczna wersja WWW.">
+<meta name="description" content="Kalkulator kosztów projektu architektonicznego 2.3.0 – kreator, wycena, czas, zespół i harmonogram. Statyczna wersja WWW.">
 <title>Kalkulator kosztów projektu architektonicznego</title>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <script>document.documentElement.dataset.theme="light";</script>
-<link rel="stylesheet" href="styles.css?v=2.2.0">
-<link rel="stylesheet" href="wizard.css?v=2.2.0">
-<link rel="stylesheet" href="site.css?v=2.2.0">
+<link rel="stylesheet" href="styles.css?v=2.3.0">
+<link rel="stylesheet" href="wizard.css?v=2.3.0">
+<link rel="stylesheet" href="site.css?v=2.3.0">
 </head>
 <body>
 <nav class="view-nav" id="viewNav" aria-label="Przełączanie widoków">
@@ -45,7 +45,7 @@
       <button type="button" id="wizNext" class="btn btn-primary">Dalej</button>
       <button type="button" id="wizPdf" class="btn btn-primary" hidden>Zapisz PDF</button>
     </div>
-    <p class="wiz-about" id="wizAbout">Kalkulator projektu · Rami Nassar · BIM architects &amp; consultants · raminassar.arch@gmail.com · © 2026 · wersja 2.2.0</p>
+    <p class="wiz-about" id="wizAbout">Kalkulator projektu · Rami Nassar · BIM architects &amp; consultants · raminassar.arch@gmail.com · © 2026 · wersja 2.3.0</p>
   </div>
 </section>
 
@@ -122,11 +122,13 @@
 <section class="panel" id="brzResult" hidden><h2>Projekty branżowe (dodatkowe poza bazą E1–E9)</h2><div class="tw"><table id="brz"></table></div><p class="tag">Dodatkowe opracowania specjalistyczne – nie zastępują etapów E5–E7 w podstawie wyceny.</p></section>
 <section class="panel" id="zakresResult" hidden><h2>Zakresy opracowania (rodzaj projektu)</h2><div class="tw"><table id="zakresTab"></table></div><p class="tag">Każdy zakres to osobny pakiet wyceny. Baza E1–E9 obejmuje standardową koncepcję, konstrukcję i instalacje – poniższe opcje są dodatkowymi zamówieniami (np. odrębny projekt wnętrz lub wykonawczy).</p></section>
 <section class="panel" id="drkResult" hidden><h2>Koszty drukowania dokumentacji projektowej</h2><div class="tw"><table id="drk"></table></div><p class="tag">Wydruki dla inwestora i urzędu. Ceny jednostkowe zmienisz w panelu „Parametry i stawki”.</p></section>
-<section class="panel" id="czasResult"><h2>Szacowany czas realizacji inwestycji · Kanban</h2><div id="czasSummary" class="czas-summary"></div><div id="kanban" class="kanban"></div><p class="tag">Szacunek na podstawie przyjętych czasów etapów, rodzaju obiektu, powierzchni, skomplikowania i lokalizacji. Część czynności (np. uzgodnienia) może biec równolegle – podana suma to orientacyjna ścieżka, nie harmonogram umowny. Czas budowy rośnie nieliniowo z powierzchnią, dzięki czemu duże obiekty nie dostają nierealnych tysięcy dni. Czasy zmienisz w panelu „Parametry i stawki” → <b>czas</b>.</p></section>
+<section class="panel" id="operacyjneResult" hidden><h2>Koszty operacyjne pracowni (wliczone do wyceny)</h2><div class="tw"><table id="operacyjneTab"></table></div><p class="tag">Stawki miesięczne z formularza są mnożone przez szacowany czas inwestycji. Kwoty netto wchodzą do „Razem”, VAT i harmonogramu rat.</p></section>
+<section class="panel" id="harmonogramResult" hidden><h2>Harmonogram pracy · Project Manager (Gantt i obciążenie)</h2><div id="harmonogramSummary" class="czas-summary"></div><div class="pm-charts"><div class="chart-box"><h3>Gantt – zadania w czasie</h3><div id="gantt" class="chart"></div></div><div class="chart-box"><h3>Obciążenie miesięczne</h3><div id="obciazenie" class="chart"></div></div></div><p class="tag" id="harmonogramNote"></p></section>
+<section class="panel" id="czasResult"><h2>Szacowany czas realizacji inwestycji · Kanban</h2><section class="panel" id="czasResult"><h2>Szacowany czas realizacji inwestycji · Kanban</h2><div id="czasSummary" class="czas-summary"></div><div id="kanban" class="kanban"></div><p class="tag">Szacunek na podstawie przyjętych czasów etapów, rodzaju obiektu, powierzchni, skomplikowania i lokalizacji. Część czynności (np. uzgodnienia) może biec równolegle – podana suma to orientacyjna ścieżka, nie harmonogram umowny. Czas budowy rośnie nieliniowo z powierzchnią, dzięki czemu duże obiekty nie dostają nierealnych tysięcy dni. Czasy zmienisz w panelu „Parametry i stawki” → <b>czas</b>.</p></section>
 <section class="panel" id="zespolResult"><h2>Zespół projektowy · obsada i czas</h2><div id="zespolSummary" class="czas-summary"></div><div class="tw"><table id="zespolTab"></table></div><p class="tag" id="zespolNote"></p></section>
 <section class="panel" id="platResult"><h2>Harmonogram płatności · rozłożenie kosztu na raty</h2><div id="platSummary" class="czas-summary"></div><div class="tw"><table id="plat"></table></div><p class="tag" id="platNote"></p></section>
 <p class="foot">Narzędzie szacunkowe, nie oferta ani porada prawna. Podział na etapy i stawki oznaczone jako szacunek to założenia modelu, a nie jeden cennik; stawki BIM są szacunkami, bo źródła nie podają cen. Opłaty skarbowe i terminy sprawdź w urzędzie. Od 1.09.2026 nowe decyzje o warunkach zabudowy wymagają planu ogólnego gminy. BIM nie jest w Polsce obowiązkowy, chyba że wymaga go zamawiający.</p>
-<p class="foot about" id="about">Kalkulator projektu · Autor: Rami Nassar · BIM architects &amp; consultants · raminassar.arch@gmail.com · © 2026 · wersja 2.2.0</p>
+<p class="foot about" id="about">Kalkulator projektu · Autor: Rami Nassar · BIM architects &amp; consultants · raminassar.arch@gmail.com · © 2026 · wersja 2.3.0</p>
 <div class="print-foot">Wygenerowano: <span id="printDate"></span> · Kwoty w zł · Narzędzie szacunkowe, nie oferta ani porada prawna. <span id="printAbout"></span></div>
 </div>
 </main>
@@ -152,14 +154,14 @@
 <footer class="site-footer">
   <span>Kalkulator projektu · Rami Nassar · BIM architects &amp; consultants</span>
   <a href="mailto:raminassar.arch@gmail.com">raminassar.arch@gmail.com</a>
-  <span>© 2026 · wersja 2.2.0 WWW</span>
+  <span>© 2026 · wersja 2.3.0 WWW</span>
   <a href="embed.html">Osadź w Google Sites</a>
 </footer>
 <div id="toast" class="toast" hidden></div>
-<script src="parametry.js?v=2.2.0"></script>
-<script src="js/config.js?v=2.2.0"></script>
-<script src="js/payment-web.js?v=2.2.0"></script>
-<script src="app.js?v=2.2.0"></script>
-<script src="widoki.js?v=2.2.0"></script>
+<script src="parametry.js?v=2.3.0"></script>
+<script src="js/config.js?v=2.3.0"></script>
+<script src="js/payment-web.js?v=2.3.0"></script>
+<script src="app.js?v=2.3.0"></script>
+<script src="widoki.js?v=2.3.0"></script>
 </body>
 </html>

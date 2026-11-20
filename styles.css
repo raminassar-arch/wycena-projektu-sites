@@ -133,6 +133,14 @@ body.desktop .desktop-only{display:inline-block}
 .toast.error{border-left-color:var(--warn)}
 .toast button{margin-left:10px;font:inherit;font-size:12px;color:var(--acc);background:none;border:0;cursor:pointer;font-weight:700}
 
+/* --- Harmonogram PM: Gantt i obciążenie miesięczne --- */
+.pm-charts{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:12px;margin-top:8px}
+.chart-box{min-width:0;border:1px solid var(--line);border-radius:7px;padding:8px;background:var(--panel)}
+.chart-box h3{font-size:12.5px;margin:0 0 6px;color:var(--mute)}
+.chart{overflow:auto}
+.chart svg{display:block;max-width:100%;height:auto}
+@media(max-width:900px){.pm-charts{grid-template-columns:1fr}}
+
 /* --- Opłata za raport PDF --- */
 .pay-modal{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(10,18,28,.55);backdrop-filter:blur(2px)}
 .pay-modal[hidden]{display:none}
@@ -198,7 +206,7 @@ body.results-unlocked #resultsLock{display:none!important}
   body.pdf-render .stack>.print-head,
   body.pdf-render .stack>section.panel:not(#resultsLock),
   body.pdf-render .stack>.print-foot{display:block!important}
-  #customResult[hidden],#brzResult[hidden],#zakresResult[hidden],#drkResult[hidden]{display:none!important}
+  #customResult[hidden],#brzResult[hidden],#zakresResult[hidden],#drkResult[hidden],#operacyjneResult[hidden],#harmonogramResult[hidden]{display:none!important}
   section,.split,.bar,.note,tr{break-inside:avoid}
   h2,.panel{break-after:avoid}
   /* Kanban w PDF – wąskie kolumny, małe karty, bez cieni. */
@@ -225,4 +233,11 @@ body.results-unlocked #resultsLock{display:none!important}
   .czas-summary .czas-total b{font-size:16px}
   #zespolTab td:nth-child(3),#zespolTab td:nth-child(5){color:#333}
   #plat td:nth-child(3),#plat td:nth-child(4){color:#333}
+  /* Wykresy PM w PDF – oba obok siebie, ostre kolory wymuszone przez przeglądarkę. */
+  #harmonogramResult{break-inside:auto}
+  .pm-charts{grid-template-columns:1fr 1fr;gap:6px}
+  .chart-box{border:1px solid #999;padding:3px;break-inside:avoid}
+  .chart-box h3{font-size:9.5px;color:#000}
+  .chart{overflow:visible;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  .chart svg{max-width:100%}
 }

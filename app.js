@@ -243,6 +243,14 @@ const FORMULARZ = [
     ['drukKomplet', 'Liczba kompletów dokumentacji'], ['drukA4', 'Arkuszy A4 w komplecie'],
     ['drukA3', 'Arkuszy A3 w komplecie'], ['drukA1', 'Arkuszy A1 (ploty) w komplecie'],
     ['drukOprawa', 'Oprawa / bindowanie kompletu', TN]]],
+  ['Koszty operacyjne pracowni (miesięczne)', [
+    ['kUrzad', 'Urządzenia i serwisowanie [zł/mies.]'],
+    ['kLokal', 'Lokal i media [zł/mies.]'],
+    ['kBiuro', 'Zaopatrzenie biura [zł/mies.]'],
+    ['kPaliwo', 'Paliwo i dojazdy [zł/mies.]']]],
+  ['Harmonogram pracy (kalendarz)', [
+    ['dataStart', 'Data rozpoczęcia pracy', 'DATA'],
+    ['urlopy', 'Urlopy / nieobecności (np. 2026-07-01:2026-07-14, 2026-08-10:2026-08-14)', 'TEKST']]],
   ['Zespół projektowy (wpływa na czas)', [
     ['zKier', 'Kierownik projektu – osoby'], ['zArch', 'Architekt – osoby'],
     ['zProj', 'Projektant / konstruktor – osoby'], ['zBim', 'Modelarz BIM – osoby'],
@@ -260,6 +268,13 @@ const FORMULARZ = [
     ['kosztm2', 'Szacunkowy koszt budowy [zł/m²]'], ['spread', 'Rozrzut cen ±[%]'], ['vat', 'VAT na usługi projektowe [%]']]],
 ];
 
+/* Lokalna data (ISO) – bez przesunięcia UTC przy pracy w Polsce. */
+const dzisISO = (() => {
+  const d = new Date();
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0, 10);
+})();
+
 /* Wartości początkowe formularza (przykład: dom 150 m²). */
 const DOMYSLNE = {
   obj: 'Dom jednorodzinny wolnostojący', char: 'Nowa budowa', pu: 150, pz: 100, kond: 2, podp: 'Nie', geo: '2', zab: 'Nie',
@@ -269,6 +284,8 @@ const DOMYSLNE = {
   ...Object.fromEntries(P.branze.map(([k]) => ['br_' + k, 'Nie'])),
   ...Object.fromEntries(ZAKRESY.map(([k]) => [k, 'Nie'])),
   drukKomplet: 3, drukA4: 60, drukA3: 25, drukA1: 2, drukOprawa: 'Tak',
+  kUrzad: 600, kLokal: 1800, kBiuro: 300, kPaliwo: 500,
+  dataStart: dzisISO, urlopy: '',
   zKier: 1, zArch: 1, zProj: 1, zBim: 1, zAsyst: 0, zEkipa: 2, zKoszty: 'Nie',
   platnosc: PLATNOSCI[0],
   podst: 'MPZP', tryb: TRYB_POZWOLENIE, pelnom: 'Tak', bliska: 'Nie', mapa: 'Tak', przyl: 'Tak', zjazd: 'Nie',
@@ -289,15 +306,22 @@ function zbudujFormularz() {
         : '');
     return naglowek + pola.map(([k, etykieta, opcje]) => {
       if (ZAKRESY_KLUCZE.has(k)) return przyciskZakresuHtml(k, etykieta, s[k], k);
-      return `<label for="${k}">${etykieta}</label>` + (opcje
-        ? `<select id="${k}">${opcje.map(o => `<option${String(s[k]) === String(o) ? ' selected' : ''}>${o}</option>`).join('')}</select>`
-        : `<input id="${k}" type="number" min="0" step="any" value="${s[k]}">`);
+      const kontrolka = opcje === 'DATA'
+        ? `<input id="${k}" type="date" value="${esc(s[k])}">`
+        : opcje === 'TEKST'
+          ? `<input id="${k}" type="text" value="${esc(s[k])}">`
+          : opcje
+            ? `<select id="${k}">${opcje.map(o => `<option${String(s[k]) === String(o) ? ' selected' : ''}>${o}</option>`).join('')}</select>`
+            : `<input id="${k}" type="number" min="0" step="any" value="${s[k]}">`;
+      return `<label for="${k}">${etykieta}</label>` + kontrolka;
     }).join('') + (grupaZakresow ? '<p class="scope-count" id="scopeCount"></p>' : '') + '</fieldset>';
   }).join('');
   $('form').oninput = e => {
     const el = e.target, k = el.id; if (!k) return;
     odblokujWycene();
-    s[k] = el.tagName === 'INPUT' ? (parseFloat(el.value) || 0) : el.value;
+    s[k] = el.tagName === 'INPUT'
+      ? (el.type === 'date' || el.type === 'text' ? el.value : (parseFloat(el.value) || 0))
+      : el.value;
     if (k === 'tryb') ustawFormalnosciDlaPozwolenia();
     try { localStorage.setItem('kalkulator-projektu', JSON.stringify(s)); } catch (x) { }
     odswierzLicznikZakresow();
@@ -340,6 +364,7 @@ function wyzerujWycene(r) {
     branze: r.branze.map(x => ({ ...x, v: 0 })),
     druk: [],
     zakresy: r.zakresy.map(x => ({ ...x, v: 0 })),
+    operacyjne: [],
   };
 }
 
@@ -426,11 +451,26 @@ function oblicz() {
     udzial: Number(udzial) || 0, stawkaM2: Number(stawkaM2) || 0,
   }));
 
+  // Koszty operacyjne pracowni: stawka miesięczna × szacowany czas inwestycji.
+  // obliczCzas() czyta tylko formularz i branże, więc nie ma zależności cyklicznej.
+  const czasDoWyceny = obliczCzas({ branze });
+  const miesiaceRozliczeniowe = Math.max(1, czasDoWyceny.dniRazem / 30);
+  const mRoz = v => Number(v).toLocaleString('pl-PL', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  const operacyjne = [
+    ['N1', 'Urządzenia i serwisowanie', Number(s.kUrzad) || 0],
+    ['N2', 'Lokal i media', Number(s.kLokal) || 0],
+    ['N3', 'Zaopatrzenie biura', Number(s.kBiuro) || 0],
+    ['N4', 'Paliwo i dojazdy', Number(s.kPaliwo) || 0],
+  ].map(([k, n, stawka]) => ({
+    k, n: n + ' (' + mRoz(miesiaceRozliczeniowe) + ' mies.)',
+    v: stawka * miesiaceRozliczeniowe, stawka, bim: 0,
+  })).filter(x => x.v > 0);
+
   // Własne parametry zaznaczone jako „wlicz do kosztu” stają się dodatkowymi pozycjami kosztu.
   const wlasneWiersze = wlasne.filter(p => p.wKoszcie && Number.isFinite(Number(p.wartosc)) && Number(p.wartosc) !== 0)
     .map((p, i) => ({ k: 'D' + (i + 1), n: p.nazwa, v: Number(p.wartosc), bim: 0 }));
   const wszystkie = [...wiersze, ...dodatkowe.filter(r => r.v > 0), ...bim.filter(r => r.v > 0),
-    ...zakresy.filter(r => r.v > 0), ...branze.filter(r => r.v > 0), ...druk, ...wlasneWiersze];
+    ...zakresy.filter(r => r.v > 0), ...branze.filter(r => r.v > 0), ...operacyjne, ...druk, ...wlasneWiersze];
   const netto = wszystkie.reduce((a, r) => a + r.v, 0);
   const brutto = netto * (1 + s.vat / 100);
 
@@ -469,7 +509,7 @@ function oblicz() {
     [R, 'Geodeta: inwentaryzacja powykonawcza', TAK, F.inwentaryzacjaPowykonawcza, 0],
     [R, 'Zawiadomienie o zakończeniu budowy', TAK, F.zawiadomienieZakonczenie, 0],
   ];
-  const wynik = { wiersze: wszystkie, netto, brutto, rozrzut: s.spread / 100, formalnosci, branze, druk, zakresy };
+  const wynik = { wiersze: wszystkie, netto, brutto, rozrzut: s.spread / 100, formalnosci, branze, druk, zakresy, operacyjne };
   return wycenaOdblokowana ? wynik : wyzerujWycene(wynik);
 }
 
@@ -479,6 +519,7 @@ function oblicz() {
    zadanie z szacowanym czasem trwania (dni). Część zadań może biec
    równolegle – suma jest szacunkiem „scieżka krytyczna uproszczona”. */
 function obliczCzas(r) {
+  const branze = Array.isArray(r) ? r : ((r && r.branze) || []);
   const C = P.czas;
   const o = P.obiekty[s.obj];
   const ppoz = o[2], sanepid = o[3];
@@ -510,7 +551,7 @@ function obliczCzas(r) {
   P.etapy.forEach(([kod, nazwa]) => {
     karty.push(k('projekt', kod, nazwa, C.etapy[kod] || 0, mp, gotowy ? 'adaptacja' : ''));
   });
-  r.branze.filter(x => x.v > 0).forEach((b, i) => {
+  branze.filter(x => x.v > 0).forEach((b, i) => {
     karty.push(k('projekt', 'Br' + (i + 1), b.n, C.branzaDni, mnoznikProjekt, 'branża'));
   });
   if (s.bim === 'Tak') karty.push(k('projekt', 'BIM', 'Model BIM, IFC i koordynacja', 10, mnoznikProjekt, 'BIM'));
@@ -580,6 +621,69 @@ function obliczCzas(r) {
   kolumny.forEach(col => { col.dni = karty.filter(x => x.faza === col.id).reduce((a, x) => a + x.dni, 0); });
   const dniRazem = kolumny.reduce((a, x) => a + x.dni, 0);
 
+  /* Harmonogram kalendarzowy: zadania w dniach roboczych rozkładamy na
+     konkretne daty od dataStart, pomijając weekendy i zakresy urlopów.
+     To samo źródło zasila Gantt, wykres obciążenia i wydruk PDF. */
+  const isoD = d => {
+    const x = new Date(d);
+    return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0');
+  };
+  const urlopyZakresy = String(s.urlopy || '').split(/[,;\n]/).map(cz => {
+    const m = cz.trim().match(/^(\d{4}-\d{2}-\d{2})\s*:\s*(\d{4}-\d{2}-\d{2})$/);
+    if (!m) return null;
+    const od = new Date(m[1] + 'T00:00:00'), doD = new Date(m[2] + 'T00:00:00');
+    return (isNaN(od) || isNaN(doD) || doD < od) ? null
+      : { od: m[1], do: m[2], odDate: od, doDate: doD };
+  }).filter(Boolean);
+  const dniUrlopu = new Set();
+  urlopyZakresy.forEach(u => {
+    for (let d = new Date(u.odDate); d <= u.doDate; d.setDate(d.getDate() + 1)) dniUrlopu.add(isoD(d));
+  });
+  const wolne = d => d.getDay() === 0 || d.getDay() === 6 || dniUrlopu.has(isoD(d));
+  const nastepny = d => { const x = new Date(d); while (wolne(x)) x.setDate(x.getDate() + 1); return x; };
+  const dodajDni = (d, ile) => {
+    const x = new Date(d); let n = Math.max(0, ile);
+    while (n > 0) { x.setDate(x.getDate() + 1); if (!wolne(x)) n--; }
+    return x;
+  };
+  const startRaw = new Date(String(s.dataStart || '') + 'T00:00:00');
+  const startData = isNaN(startRaw) ? new Date() : startRaw;
+  startData.setHours(0, 0, 0, 0);
+  let kursor = nastepny(startData);
+  const zadania = karty.map(k => {
+    const od = nastepny(kursor);
+    const doD = dodajDni(od, Math.max(1, k.dni) - 1);
+    kursor = dodajDni(doD, 1);
+    return {
+      kod: k.kod, nazwa: k.nazwa, faza: k.faza, tag: k.tag, dni: k.dni,
+      dataOd: isoD(od), dataDo: isoD(doD),
+      idxOd: Math.round((od - startData) / 86400000),
+      idxDo: Math.round((doD - startData) / 86400000),
+    };
+  });
+  const dataKoniec = zadania.length ? zadania[zadania.length - 1].dataDo : isoD(startData);
+  const dniKalendarzowe = zadania.length ? zadania[zadania.length - 1].idxDo + 1 : 1;
+  const liczbaUrlopow = [...dniUrlopu].filter(d => {
+    if (d < isoD(startData) || d > dataKoniec) return false;
+    const dzien = new Date(d + 'T00:00:00').getDay();
+    return dzien !== 0 && dzien !== 6;
+  }).length;
+
+  // Obciążenie w ujęciu miesięcznym: dni pracy i dni urlopu osobno.
+  const obcMap = new Map();
+  const dodajDoMiesiaca = (klucz, praca, urlop) => {
+    const v = obcMap.get(klucz) || { miesiac: klucz, dniPracy: 0, dniUrlopu: 0 };
+    v.dniPracy += praca; v.dniUrlopu += urlop; obcMap.set(klucz, v);
+  };
+  for (let d = new Date(startData); isoD(d) <= dataKoniec; d.setDate(d.getDate() + 1)) {
+    if (d.getDay() === 0 || d.getDay() === 6) continue;
+    const klucz = isoD(d).slice(0, 7);
+    if (dniUrlopu.has(isoD(d))) dodajDoMiesiaca(klucz, 0, 1);
+    else dodajDoMiesiaca(klucz, 1, 0);
+  }
+  const obciazenie = [...obcMap.values()].sort((a, b) => a.miesiac.localeCompare(b.miesiac))
+    .map(x => ({ ...x, etykieta: new Date(x.miesiac + '-01T00:00:00').toLocaleDateString('pl-PL', { month: 'short', year: 'numeric' }) }));
+
   return {
     kolumny, karty, dniRazem,
     zespol: {
@@ -587,6 +691,12 @@ function obliczCzas(r) {
       lacznie: Object.keys(liczbyZ).reduce((a, r) => a + liczbyZ[r], 0),
     },
     miesiace: (dniRazem / 30).toFixed(1),
+    harmonogram: {
+      dataStart: isoD(startData), dataKoniec, dniKalendarzowe,
+      dniUrlopu: liczbaUrlopow,
+      urlopy: urlopyZakresy.map(u => ({ od: u.od, do: u.do })),
+      zadania, obciazenie,
+    },
     dniProjektu: kolumny[1].dni,
     dniFormalnosci: kolumny[0].dni + kolumny[2].dni,
     dniRealizacji: kolumny[3].dni,
@@ -681,7 +791,76 @@ function obliczKosztyZespolu(czas) {
 }
 
 /* ---------- 3. WYŚWIETLANIE WYNIKÓW ---------- */
-const kolor = (r, i) => r.bim ? 'var(--bim)' : `color-mix(in srgb,var(--acc) ${100 - i * 7}%,var(--panel))`;
+const kolor = (r, i) => r.bim ? 'var(--bim)' : `color-mix(in srgb,var(--acc) ${Math.max(15, 100 - i * 7)}%,var(--panel))`;
+
+/* Wykres Gantt: oś kalendarzowa z zadaniami phas i urlopami. Render SVG,
+   żeby wydruk PDF (okno druku przeglądarki) miał ostre linie i tekst. */
+function rysujGantt(h) {
+  const zadania = (h && h.zadania) || [];
+  const dni = Math.max(1, h.dniKalendarzowe || 1);
+  const szer = 1100, lewy = 215, prawy = 18, gora = 46, wiersz = 20;
+  const wys = gora + zadania.length * wiersz + 16;
+  const X = x => lewy + (x / dni) * (szer - lewy - prawy);
+  const kolory = { przyg: '#3b82f6', projekt: '#8b5cf6', uzgod: '#f59e0b', realiz: '#10b981' };
+  const start = new Date((h.dataStart || '') + 'T00:00:00');
+  let out = `<svg class="gantt-svg" viewBox="0 0 ${szer} ${wys}" width="100%" height="${wys}" role="img" aria-label="Wykres Gantt harmonogramu pracy">`;
+  out += `<rect x="0" y="0" width="${szer}" height="${wys}" fill="#fff"/>`;
+  // Siatka miesięcy.
+  for (let d = new Date(start.getFullYear(), start.getMonth(), 1); d <= new Date((h.dataKoniec || h.dataStart) + 'T00:00:00'); d.setMonth(d.getMonth() + 1)) {
+    const idx = Math.round((d - start) / 86400000);
+    if (idx < 0 || idx > dni) continue;
+    out += `<line x1="${X(idx).toFixed(1)}" y1="${gora - 12}" x2="${X(idx).toFixed(1)}" y2="${wys - 10}" stroke="#e5e7eb"/>`;
+    out += `<text x="${(X(idx) + 3).toFixed(1)}" y="${gora - 16}" font-size="10" fill="#6b7280">${d.toLocaleDateString('pl-PL', { month: 'short', year: '2-digit' })}</text>`;
+  }
+  // Urlopy – cieniowanie.
+  (h.urlopy || []).forEach(u => {
+    const a = Math.max(0, Math.round((new Date(u.od + 'T00:00:00') - start) / 86400000));
+    const b = Math.min(dni, Math.round((new Date(u.do + 'T00:00:00') - start) / 86400000) + 1);
+    if (b > a) out += `<rect x="${X(a).toFixed(1)}" y="${gora - 12}" width="${(X(b) - X(a)).toFixed(1)}" height="${wys - gora + 2}" fill="#fee2e2" opacity="0.75"/>`;
+  });
+  out += `<line x1="${lewy}" y1="${gora - 10}" x2="${szer - prawy}" y2="${gora - 10}" stroke="#9ca3af"/>`;
+  zadania.forEach((z, i) => {
+    const y = gora + i * wiersz;
+    const x1 = X(Math.max(0, z.idxOd)), x2 = X(Math.min(dni, z.idxDo + 1));
+    const k = kolory[z.faza] || '#6366f1';
+    const nazwa = (z.kod + ' ' + z.nazwa).slice(0, 30);
+    out += `<text x="4" y="${y + 13}" font-size="10.5" fill="#374151">${esc(nazwa)}</text>`;
+    out += `<rect x="${x1.toFixed(1)}" y="${y + 3}" width="${Math.max(3, x2 - x1).toFixed(1)}" height="13" rx="3" fill="${k}"/>`;
+    out += `<text x="${(Math.min(x2 + 4, szer - prawy - 60)).toFixed(1)}" y="${y + 13}" font-size="9" fill="#374151">${z.dni}d</text>`;
+  });
+  out += '</svg>';
+  return out;
+}
+
+/* Wykres obciążenia: słupki dni pracy i dni urlopu w poszczególnych miesiącach. */
+function rysujObciazenie(h) {
+  const dane = (h && h.obciazenie) || [];
+  const szer = 700, wys = 250, lewy = 42, prawy = 12, gora = 18, dol = 44;
+  const max = Math.max(1, ...dane.map(x => x.dniPracy + x.dniUrlopu));
+  const krok = (szer - lewy - prawy) / Math.max(1, dane.length);
+  const sz = Math.min(46, krok * 0.62);
+  const Y = v => (wys - dol) - (v / max) * (wys - dol - gora);
+  let out = `<svg class="obc-svg" viewBox="0 0 ${szer} ${wys}" width="100%" height="${wys}" role="img" aria-label="Wykres obciążenia miesięcznego">`;
+  out += `<rect x="0" y="0" width="${szer}" height="${wys}" fill="#fff"/>`;
+  for (let i = 0; i <= 4; i++) {
+    const v = max * i / 4, y = Y(v);
+    out += `<line x1="${lewy}" y1="${y.toFixed(1)}" x2="${szer - prawy}" y2="${y.toFixed(1)}" stroke="#e5e7eb"/>`;
+    out += `<text x="${lewy - 6}" y="${(y + 3).toFixed(1)}" font-size="9" fill="#6b7280" text-anchor="end">${Math.round(v)}</text>`;
+  }
+  dane.forEach((x, i) => {
+    const cx = lewy + i * krok + krok / 2, bx = cx - sz / 2;
+    const hp = (wys - dol) - Y(x.dniPracy);
+    const suma = x.dniPracy + x.dniUrlopu;
+    const hu = x.dniUrlopu ? Y(x.dniPracy) - Y(suma) : 0;
+    out += `<rect x="${bx.toFixed(1)}" y="${Y(x.dniPracy).toFixed(1)}" width="${sz.toFixed(1)}" height="${Math.max(0, hp).toFixed(1)}" rx="2" fill="#4f46e5"/>`;
+    if (hu > 0) out += `<rect x="${bx.toFixed(1)}" y="${Y(suma).toFixed(1)}" width="${sz.toFixed(1)}" height="${hu.toFixed(1)}" rx="2" fill="#f59e0b"/>`;
+    out += `<text x="${cx.toFixed(1)}" y="${wys - dol + 15}" font-size="9.5" fill="#374151" text-anchor="middle">${esc(x.etykieta)}</text>`;
+    out += `<text x="${cx.toFixed(1)}" y="${wys - dol + 28}" font-size="8.5" fill="#6b7280" text-anchor="middle">${x.dniPracy}d${x.dniUrlopu ? ' +' + x.dniUrlopu + ' url.' : ''}</text>`;
+  });
+  out += `<text x="${lewy}" y="${gora - 4}" font-size="9" fill="#6b7280">dni · niebieskie = praca, pomarańczowe = urlop</text>`;
+  out += '</svg>';
+  return out;
+}
 
 function pokazWyniki() {
   const r = oblicz();
@@ -695,6 +874,7 @@ function pokazWyniki() {
   const kosztBranze = r.branze.filter(x => x.v > 0).reduce((a, x) => a + x.v, 0);
   const kosztZakresy = (r.zakresy || []).filter(x => x.v > 0).reduce((a, x) => a + x.v, 0);
   const kosztDruk = r.druk.reduce((a, x) => a + x.v, 0);
+  const kosztOperacyjny = (r.operacyjne || []).reduce((a, x) => a + x.v, 0);
 
   $('grand').textContent = zl(razem);
   $('rng').textContent = 'Przedział: ' + zl(r.brutto * (1 - r.rozrzut) + przedWnioskiem + realizacja) + ' – ' + zl(r.brutto * (1 + r.rozrzut) + przedWnioskiem + realizacja);
@@ -703,6 +883,7 @@ function pokazWyniki() {
   if (kosztBranze) podzial.push(['w tym projekty branżowe (netto)', kosztBranze]);
   if (kosztZakresy) podzial.push(['w tym zakresy opracowania (netto)', kosztZakresy]);
   if (kosztDruk) podzial.push(['w tym druk dokumentacji (netto)', kosztDruk]);
+  if (kosztOperacyjny) podzial.push(['w tym koszty operacyjne pracowni (netto)', kosztOperacyjny]);
   podzial.push(['Formalności i opłaty do wniosku', przedWnioskiem], ['Realizacja i odbiór', realizacja]);
   $('split').innerHTML = podzial.map(x => `<div><b>${zl(x[1])}</b><span>${x[0]}</span></div>`).join('');
 
@@ -786,6 +967,38 @@ function pokazWyniki() {
     }
   }
 
+  // Koszty operacyjne pracowni – wliczone do netto/brutto i rat.
+  const opPanel = $('operacyjneResult');
+  if (opPanel) {
+    opPanel.hidden = !kosztOperacyjny;
+    if (kosztOperacyjny) {
+      const stawka = v => Number(v).toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      $('operacyjneTab').innerHTML = '<tr><th>Pozycja</th><th class="n">Stawka zł/mies.</th><th class="n">Netto</th><th class="n">Brutto</th></tr>' +
+        r.operacyjne.map(x => `<tr><td>${esc(x.n)}</td><td class="n">${stawka(x.stawka)}</td><td class="n">${zl(x.v)}</td><td class="n">${zl(x.v * (1 + s.vat / 100))}</td></tr>`).join('') +
+        `<tr class="sum"><td>Razem koszty operacyjne</td><td class="n">–</td><td class="n">${zl(kosztOperacyjny)}</td><td class="n">${zl(kosztOperacyjny * (1 + s.vat / 100))}</td></tr>`;
+    }
+  }
+
+  // Harmonogram pracy PM: Gantt i obciążenie miesięczne (również w PDF).
+  const hPanel = $('harmonogramResult');
+  if (hPanel) {
+    const h = czas.harmonogram;
+    hPanel.hidden = !h.zadania.length;
+    if (h.zadania.length) {
+      $('harmonogramSummary').innerHTML =
+        `<div class="czas-total"><b>${h.dataStart}</b><span>data rozpoczęcia</span></div>` +
+        `<div><b>${h.dataKoniec}</b><span>planowane zakończenie</span></div>` +
+        `<div><b>${h.dniKalendarzowe} dni</b><span>kalendarzowo (z urlopami)</span></div>` +
+        `<div><b>${h.dniUrlopu} dni</b><span>urlopów w okresie</span></div>` +
+        `<div><b>${czas.dniRazem} dni</b><span>roboczych zadań</span></div>`;
+      $('gantt').innerHTML = rysujGantt(h);
+      $('obciazenie').innerHTML = rysujObciazenie(h);
+      $('harmonogramNote').textContent = 'Gantt i wykres obciążenia uwzględniają dni robocze (bez weekendów) oraz urlopy wpisane w formularzu. ' +
+        'Zadania są szeregowe – część czynności może biec równolegle, więc terminy są szacunkiem. ' +
+        (h.dniUrlopu ? 'Urlopy przesuwają kalendarzowe zakończenie projektu.' : 'Nie podano urlopów.');
+    }
+  }
+
   // Szacowany czas realizacji + kanban (kolumny: przygotowanie / projekt / uzgodnienia / realizacja).
   const czasPanel = $('czasResult');
   if (czasPanel) {
@@ -857,6 +1070,11 @@ function pokazWyniki() {
    $('printMeta').textContent += ' · platnosci: ' + pl.opisTrybu;
    $('printMeta').textContent += ' · zespol: ' + czas.zespol.lacznie + ' os. (czas ' + czas.miesiace + ' mies.)';
    if (aktywneZakresy.length) $('printMeta').textContent += ' · zakresy: ' + aktywneZakresy.join(', ');
+  if (kosztOperacyjny) $('printMeta').textContent += ' · koszty operacyjne: ' + zl(kosztOperacyjny);
+  if (czas.harmonogram && czas.harmonogram.zadania.length) {
+    $('printMeta').textContent += ' · harmonogram: ' + czas.harmonogram.dataStart + ' → ' + czas.harmonogram.dataKoniec +
+      ' (' + czas.harmonogram.dniUrlopu + ' dn. urlopu)';
+  }
 }
 
 zbudujFormularz();

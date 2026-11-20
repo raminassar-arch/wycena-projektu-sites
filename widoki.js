@@ -15,7 +15,7 @@
     { tytul: 'Dane projektu', opis: 'Rodzaj budynku, powierzchnia, kondygnacje.', pola: ['obj', 'char', 'pu', 'pz', 'kond', 'podp', 'geo', 'zab'] },
     { tytul: 'Zakres', opis: 'Typ projektu, lokalizacja i usługi dodatkowe.', pola: ['typ', 'gcena', 'lok', 'skompl', 'instal', 'wyk', 'kosztorys', 'wiz'] },
     { tytul: 'Formalności – pozwolenie i dokumenty', opis: 'Wybierz tryb formalny. Przy pozwoleniu lub zgłoszeniu dokumenty i czynności urzędowe zaznaczają się automatycznie; przy „Bez pozwolenia” są odznaczane i nie są liczone.', pola: ['podst', 'tryb', 'pelnom', 'bliska', 'mapa', 'przyl', 'zjazd', 'wodno', 'rolna'] },
-    { tytul: 'Zespół projektowy', opis: 'Obsada ról skraca lub wydłuża szacowany czas; koszty osobowe są opcją dodatkową.', pola: ['zKier', 'zArch', 'zProj', 'zBim', 'zAsyst', 'zEkipa', 'zKoszty'] },
+    { tytul: 'Zespół projektowy', opis: 'Obsada ról skraca lub wydłuża szacowany czas; podaj datę startu i urlopy, aby wygenerować harmonogram PM. Koszty osobowe są opcją dodatkową.', pola: ['zKier', 'zArch', 'zProj', 'zBim', 'zAsyst', 'zEkipa', 'zKoszty', 'dataStart', 'urlopy'] },
     { tytul: 'Praca w BIM', opis: 'Modelowanie, zakres branż, formaty i wymagania.', pola: ['bim', 'lod', 'zakres', 'koord', 'eir', 'ifc', 'd5', 'wizn', 'cde'] },
     { tytul: 'Projekty branżowe', opis: 'Dodatkowe opracowania instalacyjne i specjalistyczne poza podstawą E1–E9.', pola: P.branze.map(([k]) => 'br_' + k) },
     { tytul: 'Koszty drukowania', opis: 'Komplety, arkusze i oprawa dokumentacji dla inwestora i urzędu.', pola: ['drukKomplet', 'drukA4', 'drukA3', 'drukA1', 'drukOprawa'] },
@@ -63,11 +63,15 @@
         const p = POLE[klucz];
         if (!p) return '';
         const wartosc = s[klucz];
-        const kontrolka = p.opcje
-          ? '<select id="w_' + klucz + '" data-k="' + klucz + '">' +
-            p.opcje.map(o => '<option' + (String(wartosc) === String(o) ? ' selected' : '') + '>' + esc(o) + '</option>').join('') +
-            '</select>'
-          : '<input id="w_' + klucz + '" data-k="' + klucz + '" type="number" min="0" step="any" value="' + esc(wartosc) + '">';
+        const kontrolka = p.opcje === 'DATA'
+          ? '<input id="w_' + klucz + '" data-k="' + klucz + '" type="date" value="' + esc(wartosc) + '">'
+          : p.opcje === 'TEKST'
+            ? '<input id="w_' + klucz + '" data-k="' + klucz + '" type="text" value="' + esc(wartosc) + '">'
+            : p.opcje
+              ? '<select id="w_' + klucz + '" data-k="' + klucz + '">' +
+                p.opcje.map(o => '<option' + (String(wartosc) === String(o) ? ' selected' : '') + '>' + esc(o) + '</option>').join('') +
+                '</select>'
+              : '<input id="w_' + klucz + '" data-k="' + klucz + '" type="number" min="0" step="any" value="' + esc(wartosc) + '">';
         return '<div class="wiz-q"><label for="w_' + klucz + '">' + esc(p.etykieta) + '</label>' + kontrolka + '</div>';
       }).join('');
     }
@@ -108,7 +112,9 @@
     const klucz = e.target.dataset.k;
     if (!klucz) return;
     odblokujWycene();
-    s[klucz] = e.target.tagName === 'INPUT' ? (parseFloat(e.target.value) || 0) : e.target.value;
+    s[klucz] = e.target.tagName === 'INPUT'
+      ? (e.target.type === 'date' || e.target.type === 'text' ? e.target.value : (parseFloat(e.target.value) || 0))
+      : e.target.value;
     if (klucz === 'tryb') ustawFormalnosciDlaPozwolenia();
     try { localStorage.setItem('kalkulator-projektu', JSON.stringify(s)); } catch (x) { /* brak pamięci */ }
     ustawKontrolke(klucz, s[klucz]);
