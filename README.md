@@ -18,6 +18,9 @@ Wersja desktopowa jest publikowana osobno jako `dist\Kalkulator-projektu-2.3.0-s
 - **Wykresy w raporcie** – nowy panel `#harmonogramResult` zawiera wykres Gantt (zadania, miesiące, cieniowanie urlopów) oraz słupki obciążenia miesięcznego (praca + urlop). Oba trafiają do wydruku A4 i do nagłówka `printMeta`.
 - **Bez zmian** – start wyceny od 0 do pierwszej zmiany użytkownika, 10 kroków kreatora z krokiem „Faza projektu (Z1–Z7)”, Z7, licencja, brama 100,00 zł za PDF i `updates.enabled: false`.
 
+- **Kontrola zakresu dat** – pole `dataKonca` (data zakończenia pracy, opcjonalne) wraz z `dataStart` wyznacza przedział, do którego dopasowywane są czasy zadań w harmonogramie. Podsumowanie i `printMeta` pokazują termin oraz informację, czy zadania się mieszczą; za krótki termin jest sygnalizowany w raporcie. Szacunkowy czas i koszty operacyjne pozostają oparte na naturalnym nakładzie pracy.
+- **Dwa arkusze A4 w poziomie** – Gantt i wykres obciążenia miesięcznego wychodzą na osobnych stronach A4 landscape (`@page pmGantt`, `@page pmLoad`, `preferCSSPageSize` w Electronie); pozostała część raportu zostaje w A4 pionowym.
+
 ## Co nowego w 2.2.0
 
 Wycena startuje z **0 zł**. Blokada jest zdejmowana dopiero przy pierwszej

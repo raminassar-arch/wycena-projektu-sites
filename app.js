@@ -250,6 +250,7 @@ const FORMULARZ = [
     ['kPaliwo', 'Paliwo i dojazdy [zł/mies.]']]],
   ['Harmonogram pracy (kalendarz)', [
     ['dataStart', 'Data rozpoczęcia pracy', 'DATA'],
+    ['dataKonca', 'Data zakończenia pracy (termin docelowy; opcjonalnie)', 'DATA'],
     ['urlopy', 'Urlopy / nieobecności (np. 2026-07-01:2026-07-14, 2026-08-10:2026-08-14)', 'TEKST']]],
   ['Zespół projektowy (wpływa na czas)', [
     ['zKier', 'Kierownik projektu – osoby'], ['zArch', 'Architekt – osoby'],
@@ -285,7 +286,7 @@ const DOMYSLNE = {
   ...Object.fromEntries(ZAKRESY.map(([k]) => [k, 'Nie'])),
   drukKomplet: 3, drukA4: 60, drukA3: 25, drukA1: 2, drukOprawa: 'Tak',
   kUrzad: 600, kLokal: 1800, kBiuro: 300, kPaliwo: 500,
-  dataStart: dzisISO, urlopy: '',
+  dataStart: dzisISO, dataKonca: '', urlopy: '',
   zKier: 1, zArch: 1, zProj: 1, zBim: 1, zAsyst: 0, zEkipa: 2, zKoszty: 'Nie',
   platnosc: PLATNOSCI[0],
   podst: 'MPZP', tryb: TRYB_POZWOLENIE, pelnom: 'Tak', bliska: 'Nie', mapa: 'Tak', przyl: 'Tak', zjazd: 'Nie',
@@ -649,13 +650,48 @@ function obliczCzas(r) {
   const startRaw = new Date(String(s.dataStart || '') + 'T00:00:00');
   const startData = isNaN(startRaw) ? new Date() : startRaw;
   startData.setHours(0, 0, 0, 0);
+  const koniecRaw = new Date(String(s.dataKonca || '') + 'T00:00:00');
+  const termin = isNaN(koniecRaw) || koniecRaw < startData ? '' : isoD(koniecRaw);
+  /* Data zakończenia (termin) dopasowuje plan zadań do podanego zakresu.
+     Zmieniamy tylko kalendarz – szacunkowy czas (dniRazem) i koszty
+     operacyjne zostają oparte na naturalnym nakładzie pracy. */
+  let planDni = karty.map(k => k.dni);
+  let dostepneDni = 0, wspTerminu = 1, terminMiesciSie = true;
+  if (termin) {
+    for (let d = new Date(startData); isoD(d) <= termin; d.setDate(d.getDate() + 1)) {
+      if (!wolne(d)) dostepneDni++;
+    }
+    if (dostepneDni >= karty.length && dniRazem > 0) {
+      wspTerminu = dostepneDni / dniRazem;
+      planDni = karty.map(k => Math.max(1, Math.round(k.dni * wspTerminu)));
+      let suma = planDni.reduce((a, v) => a + v, 0);
+      // Korekta zaokrągleń: skracamy najdłuższe, wydłużamy najkrótsze zadanie.
+      let gard = 0;
+      while (suma !== dostepneDni && gard++ < 10000) {
+        if (suma > dostepneDni) {
+          const idx = planDni.indexOf(Math.max(...planDni));
+          if (planDni[idx] <= 1) break;
+          planDni[idx]--; suma--;
+        } else {
+          const idx = planDni.indexOf(Math.min(...planDni));
+          planDni[idx]++; suma++;
+        }
+      }
+      terminMiesciSie = planDni.reduce((a, v) => a + v, 0) <= dostepneDni;
+    } else {
+      terminMiesciSie = false;
+    }
+  }
+  const dniZadania = planDni.reduce((a, v) => a + v, 0);
   let kursor = nastepny(startData);
-  const zadania = karty.map(k => {
+  const zadania = karty.map((k, i) => {
+    const dniPlanu = Math.max(1, planDni[i]);
     const od = nastepny(kursor);
-    const doD = dodajDni(od, Math.max(1, k.dni) - 1);
+    const doD = dodajDni(od, dniPlanu - 1);
     kursor = dodajDni(doD, 1);
     return {
-      kod: k.kod, nazwa: k.nazwa, faza: k.faza, tag: k.tag, dni: k.dni,
+      kod: k.kod, nazwa: k.nazwa, faza: k.faza, tag: k.tag,
+      dni: dniPlanu, dniBazowe: k.dni,
       dataOd: isoD(od), dataDo: isoD(doD),
       idxOd: Math.round((od - startData) / 86400000),
       idxDo: Math.round((doD - startData) / 86400000),
@@ -693,6 +729,8 @@ function obliczCzas(r) {
     miesiace: (dniRazem / 30).toFixed(1),
     harmonogram: {
       dataStart: isoD(startData), dataKoniec, dniKalendarzowe,
+      termin, dostepneDni, dniZadania, terminMiesciSie,
+      wspTerminu: Number(wspTerminu.toFixed(3)),
       dniUrlopu: liczbaUrlopow,
       urlopy: urlopyZakresy.map(u => ({ od: u.od, do: u.do })),
       zadania, obciazenie,
@@ -990,12 +1028,21 @@ function pokazWyniki() {
         `<div><b>${h.dataKoniec}</b><span>planowane zakończenie</span></div>` +
         `<div><b>${h.dniKalendarzowe} dni</b><span>kalendarzowo (z urlopami)</span></div>` +
         `<div><b>${h.dniUrlopu} dni</b><span>urlopów w okresie</span></div>` +
-        `<div><b>${czas.dniRazem} dni</b><span>roboczych zadań</span></div>`;
+        `<div><b>${h.termin ? h.dniZadania : czas.dniRazem} dni</b><span>${h.termin ? 'roboczych w planie' : 'roboczych zadań'}</span></div>` +
+        (h.termin
+          ? `<div><b>${h.termin}</b><span>termin zakończenia (zakres)</span></div>` +
+            `<div><b>${h.dostepneDni} dni</b><span>roboczych w zakresie</span></div>`
+          : '');
       $('gantt').innerHTML = rysujGantt(h);
       $('obciazenie').innerHTML = rysujObciazenie(h);
       $('harmonogramNote').textContent = 'Gantt i wykres obciążenia uwzględniają dni robocze (bez weekendów) oraz urlopy wpisane w formularzu. ' +
         'Zadania są szeregowe – część czynności może biec równolegle, więc terminy są szacunkiem. ' +
-        (h.dniUrlopu ? 'Urlopy przesuwają kalendarzowe zakończenie projektu.' : 'Nie podano urlopów.');
+        (h.dniUrlopu ? 'Urlopy przesuwają kalendarzowe zakończenie projektu.' : 'Nie podano urlopów.') +
+        (h.termin
+          ? ' Termin ' + h.termin + ': ' + (h.terminMiesciSie
+            ? 'zadania mieszczą się w podanym zakresie.'
+            : 'termin jest zbyt krótki – zadania wykraczają poza zakres.')
+          : ' Podaj datę zakończenia, aby dopasować zadania do zakresu.');
     }
   }
 
@@ -1074,6 +1121,8 @@ function pokazWyniki() {
   if (czas.harmonogram && czas.harmonogram.zadania.length) {
     $('printMeta').textContent += ' · harmonogram: ' + czas.harmonogram.dataStart + ' → ' + czas.harmonogram.dataKoniec +
       ' (' + czas.harmonogram.dniUrlopu + ' dn. urlopu)';
+    if (czas.harmonogram.termin) $('printMeta').textContent += ' · termin: ' + czas.harmonogram.termin +
+      (czas.harmonogram.terminMiesciSie ? '' : ' (za krótki)');
   }
 }
 

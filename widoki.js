@@ -15,7 +15,7 @@
     { tytul: 'Dane projektu', opis: 'Rodzaj budynku, powierzchnia, kondygnacje.', pola: ['obj', 'char', 'pu', 'pz', 'kond', 'podp', 'geo', 'zab'] },
     { tytul: 'Zakres', opis: 'Typ projektu, lokalizacja i usługi dodatkowe.', pola: ['typ', 'gcena', 'lok', 'skompl', 'instal', 'wyk', 'kosztorys', 'wiz'] },
     { tytul: 'Formalności – pozwolenie i dokumenty', opis: 'Wybierz tryb formalny. Przy pozwoleniu lub zgłoszeniu dokumenty i czynności urzędowe zaznaczają się automatycznie; przy „Bez pozwolenia” są odznaczane i nie są liczone.', pola: ['podst', 'tryb', 'pelnom', 'bliska', 'mapa', 'przyl', 'zjazd', 'wodno', 'rolna'] },
-    { tytul: 'Zespół projektowy', opis: 'Obsada ról skraca lub wydłuża szacowany czas; podaj datę startu i urlopy, aby wygenerować harmonogram PM. Koszty osobowe są opcją dodatkową.', pola: ['zKier', 'zArch', 'zProj', 'zBim', 'zAsyst', 'zEkipa', 'zKoszty', 'dataStart', 'urlopy'] },
+    { tytul: 'Zespół projektowy', opis: 'Obsada ról skraca lub wydłuża szacowany czas. Podaj datę rozpoczęcia i zakończenia pracy, aby dopasować harmonogram PM do zakresu; urlopy przesuwają terminy. Koszty osobowe są opcją dodatkową.', pola: ['zKier', 'zArch', 'zProj', 'zBim', 'zAsyst', 'zEkipa', 'zKoszty', 'dataStart', 'dataKonca', 'urlopy'] },
     { tytul: 'Praca w BIM', opis: 'Modelowanie, zakres branż, formaty i wymagania.', pola: ['bim', 'lod', 'zakres', 'koord', 'eir', 'ifc', 'd5', 'wizn', 'cde'] },
     { tytul: 'Projekty branżowe', opis: 'Dodatkowe opracowania instalacyjne i specjalistyczne poza podstawą E1–E9.', pola: P.branze.map(([k]) => 'br_' + k) },
     { tytul: 'Koszty drukowania', opis: 'Komplety, arkusze i oprawa dokumentacji dla inwestora i urzędu.', pola: ['drukKomplet', 'drukA4', 'drukA3', 'drukA1', 'drukOprawa'] },

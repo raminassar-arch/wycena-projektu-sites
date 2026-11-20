@@ -173,6 +173,8 @@ body.results-unlocked #resultsLock{display:none!important}
 
 @media print{
   @page{size:A4;margin:14mm}
+  @page pmGantt{size:A4 landscape;margin:10mm}
+  @page pmLoad{size:A4 landscape;margin:10mm}
   :root,body{background:#fff!important;color:#000!important}
   /* PDF zawsze zawiera kalkulator – niezależnie od aktywnego widoku. */
   .view-nav,#viewWizard,.pay-modal{display:none!important}
@@ -233,11 +235,13 @@ body.results-unlocked #resultsLock{display:none!important}
   .czas-summary .czas-total b{font-size:16px}
   #zespolTab td:nth-child(3),#zespolTab td:nth-child(5){color:#333}
   #plat td:nth-child(3),#plat td:nth-child(4){color:#333}
-  /* Wykresy PM w PDF – oba obok siebie, ostre kolory wymuszone przez przeglądarkę. */
-  #harmonogramResult{break-inside:auto}
-  .pm-charts{grid-template-columns:1fr 1fr;gap:6px}
-  .chart-box{border:1px solid #999;padding:3px;break-inside:avoid}
-  .chart-box h3{font-size:9.5px;color:#000}
+  /* Wykresy PM w PDF – dwa osobne arkusze A4 w poziomie; reszta raportu A4 pionowo. */
+  #harmonogramResult{break-inside:auto;break-before:page;page:pmGantt}
+  #harmonogramResult .pm-charts{display:block}
+  #harmonogramResult .chart-box{border:1px solid #999;padding:4px;margin:0 0 8px;break-inside:avoid}
+  #ganttBox{page:pmGantt;break-after:page}
+  #obciazenieBox{page:pmLoad;break-before:page}
+  #harmonogramNote{page:pmLoad}
   .chart{overflow:visible;print-color-adjust:exact;-webkit-print-color-adjust:exact}
-  .chart svg{max-width:100%}
+  .chart svg{max-width:100%;height:auto!important}
 }
