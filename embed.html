@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kalkulator projektu – osadzanie w Google Sites</title>
+<style>
+  :root {
+    --green-deep:#0c3b2c; --green:#14563f; --green-mid:#1e6b50; --green-soft:#e6efe6;
+    --gold:#c8a24a; --gold-pale:#fbf4df; --bg:#f4f7f3; --card:#fff;
+    --ink:#16241c; --muted:#65766b; --border:#d6e0d5; --danger:#a62b1f;
+    --radius:14px; --shadow:0 1px 2px rgba(12,59,44,.06),0 10px 30px rgba(12,59,44,.07);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 "Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+  header{background:linear-gradient(135deg,var(--green-deep),var(--green));color:#fff;padding:26px 22px;border-bottom:3px solid var(--gold)}
+  header .wrap,main{max-width:980px;margin:0 auto}
+  header h1{margin:0;font-family:Georgia,"Times New Roman",serif;font-size:1.55rem}
+  header p{margin:6px 0 0;color:#d8e6d8;font-size:.92rem}
+  main{padding:22px 18px 60px}
+  h2{font-family:Georgia,"Times New Roman",serif;color:var(--green-deep);font-size:1.15rem;margin:0 0 .5em}
+  .panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 22px;margin:0 0 18px}
+  ol,ul{margin:0 0 .4em;padding-left:1.35em}
+  li{margin-bottom:.35em}
+  code,pre,textarea{font-family:"Cascadia Mono",Consolas,"Courier New",monospace}
+  label{display:block;font-weight:600;font-size:.88rem;margin-bottom:6px}
+  input[type=url]{width:100%;padding:10px 12px;font-size:.9rem;border:1px solid var(--border);border-radius:10px;background:#fbfdfb;color:var(--ink)}
+  input[type=url]:focus{outline:2px solid var(--green-mid);outline-offset:1px}
+  textarea{width:100%;min-height:128px;resize:vertical;padding:12px 14px;font-size:.82rem;line-height:1.5;border:1px solid var(--border);border-radius:10px;background:#0f2419;color:#e8f2e8}
+  .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:12px}
+  button{font:inherit;font-size:.88rem;font-weight:600;padding:9px 16px;border-radius:999px;border:1px solid var(--green);background:var(--green);color:#fff;cursor:pointer}
+  button.ghost{background:#fff;color:var(--green)}
+  button:hover{filter:brightness(1.08)}
+  .note{border-left:4px solid var(--gold);background:var(--gold-pale);padding:12px 16px;border-radius:8px;font-size:.9rem;margin:14px 0 0}
+  .warn{border-left:4px solid var(--danger);background:#fdf1ef;padding:12px 16px;border-radius:8px;font-size:.9rem;margin:14px 0 0}
+  .frame-box{border:1px dashed var(--border);border-radius:12px;overflow:hidden;background:#fff}
+  iframe{display:block;width:100%;height:900px;border:0}
+  .hint{color:var(--muted);font-size:.85rem;margin:8px 0 0}
+  .small{font-size:.85rem;color:var(--muted)}
+  a{color:var(--green-mid)}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>Kalkulator projektu – osadzanie w Google Sites</h1>
+    <p>Statyczna wersja kalkulatora 1.7.0. Ten plik nie jest częścią aplikacji – to pomocnik z gotowym kodem osadzenia.</p>
+  </div>
+</header>
+
+<main>
+  <section class="panel">
+    <h2>1. Adres aplikacji</h2>
+    <ol>
+      <li>Aplikacja jest opublikowana pod adresem
+        <code>https://raminassar-arch.github.io/wycena-projektu-sites/</code>.</li>
+      <li>Jeśli używasz własnego hostingu lub wersji testowej, wklej poniżej właściwy adres.</li>
+      <li>Aby pokazać wersję prezentacyjną bez opłaty, dodaj na końcu adresu <code>?demo=1</code>.</li>
+    </ol>
+  </section>
+
+  <section class="panel">
+    <h2>2. Kod do wklejenia w Google Sites</h2>
+    <label for="url">Adres opublikowanej aplikacji</label>
+    <input id="url" type="url" spellcheck="false" autocomplete="off">
+    <div class="row">
+      <button id="copy" type="button">Kopiuj kod</button>
+      <button id="open" type="button" class="ghost">Otwórz w nowej karcie</button>
+      <span id="status" class="small" role="status" aria-live="polite"></span>
+    </div>
+    <p class="hint">W Google Sites: <strong>Wstaw → Osadź → Kod osadzania</strong>, wklej kod i zatwierdź.
+      Następnie rozciągnij blok na całą szerokość i ustaw wysokość ok. 900–1100&nbsp;px.</p>
+    <textarea id="snippet" readonly spellcheck="false"></textarea>
+  </section>
+
+  <section class="panel">
+    <h2>3. Podgląd</h2>
+    <div class="frame-box">
+      <iframe id="preview" title="Podgląd kalkulatora projektu"></iframe>
+    </div>
+    <p class="hint">Podgląd działa najpewniej, gdy ten plik jest otwarty z tego samego hostingu
+      co aplikacja (np. <code>https://raminassar-arch.github.io/wycena-projektu-sites/embed.html</code>).</p>
+  </section>
+
+  <section class="panel">
+    <h2>Ważne o wersji WWW</h2>
+    <div class="warn">
+      <strong>Płatność wymaga serwera.</strong> Strona statyczna nie przyjmuje przelewów sama.
+      Wyniki kalkulatora są zablokowane do opłaty za raport PDF; domyślnie aplikacja łączy się
+      z lokalnym serwerem <code>http://127.0.0.1:8787</code>. Adres własnego API ustawiasz
+      parametrem <code>?api=https://twoj-serwer.example</code> albo w <code>js/config.js</code>.
+    </div>
+    <div class="note">
+      <strong>Do prezentacji:</strong> <code>?demo=1</code> pokazuje cały przebieg płatności i odblokowuje
+      wyniki bez pobierania opłaty. Tryb demonstracyjny jest wyraźnie oznaczony w raporcie.
+    </div>
+    <ul class="small">
+      <li>Kreator zawsze pokazuje szacunek na żywo – blokada dotyczy tylko szczegółowych wyników i PDF.</li>
+      <li>Dane formularza i parametry zapisują się w <code>localStorage</code>; w ramce Google Sites niektóre przeglądarki mogą blokować tę pamięć.</li>
+      <li>PDF powstaje w oknie druku przeglądarki – wybierz „Zapisz jako PDF” i format A4.</li>
+      <li>Jedna opłacona sesja = jeden raport PDF.</li>
+      <li>Wersja desktopowa z natywnym PDF i aktualizacjami jest dostępna w repozytorium głównego projektu.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  var input = document.getElementById("url");
+  var snippet = document.getElementById("snippet");
+  var preview = document.getElementById("preview");
+  var status = document.getElementById("status");
+  var DEFAULT_URL = "https://raminassar-arch.github.io/wycena-projektu-sites/";
+
+  function target() {
+    var value = (input.value || "").trim();
+    if (!value) return "";
+    if (!/^https?:\/\//i.test(value)) value = "https://" + value;
+    return value;
+  }
+  function code() {
+    var src = target() || DEFAULT_URL;
+    return '<iframe src="' + src + '"\n' +
+      '        title="Kalkulator kosztów projektu architektonicznego"\n' +
+      '        style="width:100%;height:1000px;border:0;display:block"\n' +
+      '        allow="clipboard-write"></iframe>';
+  }
+  function refresh() {
+    snippet.value = code();
+    var src = target() || DEFAULT_URL;
+    preview.src = src;
+  }
+  function flash(text) {
+    status.textContent = text;
+    setTimeout(function () { status.textContent = ""; }, 2500);
+  }
+  document.getElementById("copy").addEventListener("click", function () {
+    snippet.select();
+    snippet.setSelectionRange(0, snippet.value.length);
+    var done = function () { flash("Skopiowano do schowka."); };
+    var fail = function () {
+      try { document.execCommand("copy"); done(); }
+      catch (err) { flash("Zaznacz kod i skopiuj ręcznie (Ctrl+C)."); }
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(snippet.value).then(done, fail);
+    } else { fail(); }
+  });
+  document.getElementById("open").addEventListener("click", function () {
+    window.open(target() || DEFAULT_URL, "_blank", "noopener");
+  });
+  input.addEventListener("input", refresh);
+  input.value = DEFAULT_URL;
+  refresh();
+})();
+</script>
+</body>
+</html>

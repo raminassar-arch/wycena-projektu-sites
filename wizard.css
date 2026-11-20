@@ -1,0 +1,39 @@
+/* Kreator Q&A i przełączanie widoków – wszystko w jednym oknie. */
+.view{display:block}
+.view[hidden]{display:none!important}
+
+.view-nav{display:flex;align-items:center;gap:6px;padding:8px 16px;background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.view-nav[hidden]{display:none!important}
+.view-nav button{font:inherit;font-size:13px;font-weight:600;color:var(--mute);background:transparent;border:1px solid transparent;border-radius:6px;padding:6px 12px;cursor:pointer}
+.view-nav button:hover{color:var(--ink);background:var(--bg)}
+.view-nav button.active{color:var(--acc);border-color:var(--acc);background:color-mix(in srgb,var(--acc) 8%,var(--panel))}
+.view-nav-spacer{flex:1}
+.view-nav-info{font-size:12px;color:var(--mute)}
+
+/* Stała wysokość kreatora: zmienna liczba pól nie przesuwa przycisków nawigacji.
+   Pytania przewijają się wewnątrz .wiz-body, reszta ma stałe miejsce. */
+.wizard{max-width:780px;margin:0 auto;padding:22px 20px 40px;display:flex;flex-direction:column;height:calc(100vh - 150px);min-height:560px}
+.wiz-top{flex:0 0 auto;margin-bottom:16px}
+.wiz-step{font-size:14px;color:var(--mute);margin-bottom:8px}
+.wiz-step b{color:var(--ink)}
+.wiz-track{height:6px;background:var(--line);border-radius:99px;overflow:hidden}
+.wiz-track>div{height:100%;width:0;background:var(--acc);transition:width .25s ease}
+
+.wiz-body{flex:1 1 auto;min-height:0;overflow-y:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px 18px}
+.wiz-q{display:grid;grid-template-columns:minmax(200px,1fr) minmax(180px,1fr);gap:12px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)}
+.wiz-q:last-child{border-bottom:0}
+.wiz-q label{font-size:14px;font-weight:600}
+.wiz-q input,.wiz-q select{font-size:13.5px}
+
+.wiz-total{flex:0 0 auto;max-height:132px;overflow-y:auto;margin-top:14px;padding:12px 16px;background:color-mix(in srgb,var(--acc) 10%,var(--panel));border:1px solid var(--acc);border-radius:8px;font-size:14px}
+.wiz-total b{font-size:18px;color:var(--acc)}
+.wiz-total span{color:var(--mute);font-size:12px}
+
+.wiz-actions{flex:0 0 auto;position:sticky;bottom:0;z-index:2;display:flex;align-items:center;gap:8px;margin-top:16px;padding:6px 0;background:var(--bg);flex-wrap:wrap}
+.wiz-spacer{flex:1}
+.wiz-about{flex:0 0 auto;margin:14px 0 0;text-align:center;font-size:11.5px;color:var(--mute)}
+
+@media (max-width:620px){
+  .wiz-q{grid-template-columns:1fr;gap:6px}
+  .wizard{padding:16px 12px 30px}
+}

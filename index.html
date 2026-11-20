@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0C3B2C">
+<meta name="description" content="Kalkulator kosztów projektu architektonicznego 1.7.0 – kreator, wycena, czas, zespół i harmonogram. Statyczna wersja WWW.">
+<title>Kalkulator kosztów projektu architektonicznego</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<script>document.documentElement.dataset.theme="light";</script>
+<link rel="stylesheet" href="styles.css?v=1.7.0">
+<link rel="stylesheet" href="wizard.css?v=1.7.0">
+<link rel="stylesheet" href="site.css?v=1.7.0">
+</head>
+<body>
+<nav class="view-nav" id="viewNav" aria-label="Przełączanie widoków">
+  <span class="site-brand"><span class="logo">K</span><span class="brand-text"><strong>Kalkulator projektu</strong><small>Wycena · kreator · raport PDF</small></span></span>
+  <span class="nav-links">
+    <button type="button" data-view="wizard">Kreator</button>
+    <button type="button" data-view="calc">Kalkulator</button>
+  </span>
+  <span class="view-nav-spacer"></span>
+  <span class="view-nav-info" id="viewNavInfo">Raport PDF – 100,00 zł</span>
+</nav>
+
+<!-- ============ WIDOK 1: KREATOR (PYTANIA I ODPOWIEDZI) ============ -->
+<section class="view" id="viewWizard">
+  <header class="site-head">
+    <div>
+      <h1>Kreator wyceny projektu</h1>
+      <p>Odpowiedz na kilka pytań – wynik przelicza się na bieżąco. W każdej chwili możesz przejść do pełnego kalkulatora.</p>
+    </div>
+  </header>
+  <div class="wizard">
+    <div class="wiz-top">
+      <div class="wiz-step" id="wizStepInfo"></div>
+      <div class="wiz-track"><div id="wizProgress"></div></div>
+    </div>
+    <div class="wiz-body" id="wizQuestions" aria-live="polite"></div>
+    <div class="wiz-total">Szacunkowy koszt całkowity: <b id="wizTotal"></b><span> Kwoty z VAT i opłatami – tak samo jak w kalkulatorze.</span> <span>Szacowany czas realizacji: <b id="wizCzas"></b></span> <span>Harmonogram: <b id="wizPlat"></b></span> <span>Zespół: <b id="wizZespol"></b></span> <span>Zakres: <b id="wizZakres"></b></span></div>
+    <div class="wiz-actions">
+      <button type="button" id="wizBack" class="btn">Wstecz</button>
+      <span class="wiz-spacer"></span>
+      <button type="button" id="wizCalc" class="btn">Pełny kalkulator</button>
+      <button type="button" id="wizNext" class="btn btn-primary">Dalej</button>
+      <button type="button" id="wizPdf" class="btn btn-primary" hidden>Zapisz PDF</button>
+    </div>
+    <p class="wiz-about" id="wizAbout">Kalkulator projektu · Rami Nassar · BIM architects &amp; consultants · raminassar.arch@gmail.com · © 2026 · wersja 1.7.0</p>
+  </div>
+</section>
+
+<!-- ============ WIDOK 2: DOTYCHCZASOWY KALKULATOR ============ -->
+<section class="view" id="viewCalc" hidden>
+<header class="site-head">
+<div>
+<h1>Kalkulator kosztów projektu architektonicznego</h1>
+<p>Koszt projektu etap po etapie, praca w BIM, formalności i opłaty w Polsce. Zmień dane po lewej, wynik przelicza się od razu.</p>
+</div>
+<div class="head-actions">
+<button type="button" id="pdfBtn" class="btn btn-primary" title="Zapisz wynik do pliku PDF (opłata 100,00 zł)">Zapisz PDF · 100 zł</button>
+<button type="button" id="updateBtn" class="btn desktop-only" title="Sprawdź dostępność nowej wersji">Aktualizacje</button>
+</div>
+</header>
+<main>
+<div class="left">
+<form class="panel" id="form" onsubmit="return false"></form>
+
+<section class="panel" id="paramPanel">
+<details id="paramDetails">
+<summary><b>Parametry i stawki</b> <span class="tag">– edytuj wartości lub dodaj własne</span></summary>
+<div class="param-body">
+<p class="hint">Zmiany w parametrach przeliczają wynik od razu i są zapamiętywane w tej przeglądarce. Przywrócenie resetuje tylko parametry, nie dane formularza.</p>
+
+<details class="sub">
+<summary>Edytuj istniejące parametry (stawki, współczynniki, opłaty)</summary>
+<div id="paramEditor" class="param-editor"></div>
+</details>
+
+<details class="sub" open>
+<summary>Dodaj własne parametry / pozycje kosztów</summary>
+<div class="custom-add">
+<input id="npNazwa" type="text" placeholder="Nazwa parametru, np. „Opłata za pakiet”" aria-label="Nazwa nowego parametru">
+<div class="custom-add-row">
+<input id="npWartosc" type="number" min="0" step="any" placeholder="Wartość [zł]" aria-label="Wartość nowego parametru">
+<label class="inline"><input id="npWKoszcie" type="checkbox" checked> wlicz do kosztu projektu</label>
+<button type="button" id="npDodaj" class="btn">Dodaj parametr</button>
+</div>
+</div>
+<div id="customList" class="custom-list"></div>
+</details>
+
+<div class="param-actions">
+<button type="button" id="paramReset" class="btn btn-danger">Przywróć domyślne parametry</button>
+<span id="paramStatus" class="tag" aria-live="polite"></span>
+</div>
+</div>
+</details>
+</section>
+</div>
+
+<div class="stack">
+<section class="panel results-lock" id="resultsLock" aria-live="polite">
+<div class="lock-mark">PDF</div>
+<h2>Wyniki dostępne po opłacie</h2>
+<p>Kalkulator przygotował wycenę. Opłać raport PDF, aby zobaczyć sumę, tabele, czas realizacji, zespół i harmonogram oraz zapisać plik.</p>
+<button type="button" id="unlockBtn" class="btn btn-primary">Pokaż wyniki i zapisz PDF · 100 zł</button>
+<p class="tag">Jedna opłata = jeden raport PDF. W kreatorze szacunek pozostaje widoczny na bieżąco.</p>
+</section>
+<div class="print-head" aria-hidden="true">
+<div class="print-title">Kalkulator kosztów projektu architektonicznego</div>
+<div id="printMeta" class="print-meta"></div>
+</div>
+<section class="panel" aria-live="polite">
+<div class="total"><div><div class="range">Razem: projekt, formalności, realizacja (brutto)</div><div class="big" id="grand"></div></div><div class="range" id="rng"></div></div>
+<div class="bar" id="bar" role="img" aria-label="Udział etapów w koszcie projektu"></div>
+<div class="split" id="split"></div>
+<div id="notes"></div>
+</section>
+<section class="panel"><h2>Koszt projektu etap po etapie</h2><div class="tw"><table id="stg"></table></div></section>
+<section class="panel"><h2>Formalności, uzgodnienia i opłaty</h2><div class="tw"><table id="frm"></table></div><p class="tag" id="hid"></p></section>
+<section class="panel" id="customResult" hidden><h2>Własne parametry / pozycje kosztów</h2><div class="tw"><table id="cst"></table></div></section>
+<section class="panel" id="brzResult" hidden><h2>Projekty branżowe (dodatkowe poza bazą E1–E9)</h2><div class="tw"><table id="brz"></table></div><p class="tag">Dodatkowe opracowania specjalistyczne – nie zastępują etapów E5–E7 w podstawie wyceny.</p></section>
+<section class="panel" id="zakresResult" hidden><h2>Zakresy opracowania (rodzaj projektu)</h2><div class="tw"><table id="zakresTab"></table></div><p class="tag">Każdy zakres to osobny pakiet wyceny. Baza E1–E9 obejmuje standardową koncepcję, konstrukcję i instalacje – poniższe opcje są dodatkowymi zamówieniami (np. odrębny projekt wnętrz lub wykonawczy).</p></section>
+<section class="panel" id="drkResult" hidden><h2>Koszty drukowania dokumentacji projektowej</h2><div class="tw"><table id="drk"></table></div><p class="tag">Wydruki dla inwestora i urzędu. Ceny jednostkowe zmienisz w panelu „Parametry i stawki”.</p></section>
+<section class="panel" id="czasResult"><h2>Szacowany czas realizacji inwestycji · Kanban</h2><div id="czasSummary" class="czas-summary"></div><div id="kanban" class="kanban"></div><p class="tag">Szacunek na podstawie przyjętych czasów etapów, rodzaju obiektu, powierzchni, skomplikowania i lokalizacji. Część czynności (np. uzgodnienia) może biec równolegle – podana suma to orientacyjna ścieżka, nie harmonogram umowny. Czas budowy rośnie nieliniowo z powierzchnią, dzięki czemu duże obiekty nie dostają nierealnych tysięcy dni. Czasy zmienisz w panelu „Parametry i stawki” → <b>czas</b>.</p></section>
+<section class="panel" id="zespolResult"><h2>Zespół projektowy · obsada i czas</h2><div id="zespolSummary" class="czas-summary"></div><div class="tw"><table id="zespolTab"></table></div><p class="tag" id="zespolNote"></p></section>
+<section class="panel" id="platResult"><h2>Harmonogram płatności · rozłożenie kosztu na raty</h2><div id="platSummary" class="czas-summary"></div><div class="tw"><table id="plat"></table></div><p class="tag" id="platNote"></p></section>
+<p class="foot">Narzędzie szacunkowe, nie oferta ani porada prawna. Podział na etapy i stawki oznaczone jako szacunek to założenia modelu, a nie jeden cennik; stawki BIM są szacunkami, bo źródła nie podają cen. Opłaty skarbowe i terminy sprawdź w urzędzie. Od 1.09.2026 nowe decyzje o warunkach zabudowy wymagają planu ogólnego gminy. BIM nie jest w Polsce obowiązkowy, chyba że wymaga go zamawiający.</p>
+<p class="foot about" id="about">Kalkulator projektu · Autor: Rami Nassar · BIM architects &amp; consultants · raminassar.arch@gmail.com · © 2026 · wersja 1.7.0</p>
+<div class="print-foot">Wygenerowano: <span id="printDate"></span> · Kwoty w zł · Narzędzie szacunkowe, nie oferta ani porada prawna. <span id="printAbout"></span></div>
+</div>
+</main>
+</section>
+
+<!-- ============ OPŁATA ZA RAPORT PDF ============ -->
+<div id="paymentModal" class="pay-modal" hidden role="dialog" aria-modal="true" aria-labelledby="payTitle">
+  <div class="pay-card">
+    <div class="pay-icon">PDF</div>
+    <h2 id="payTitle">Opłata za raport PDF</h2>
+    <p class="pay-price"><b id="payPrice">100,00 zł</b><span>za każdy wygenerowany raport</span></p>
+    <p id="payStatus" class="pay-status" aria-live="polite">Przygotowywanie płatności…</p>
+    <div class="pay-session" id="paySession" hidden></div>
+    <div class="pay-track"><div id="payProgress"></div></div>
+    <div class="pay-actions">
+      <button type="button" id="payOpen" class="btn btn-primary" hidden>Otwórz stronę płatności</button>
+      <button type="button" id="payCancel" class="btn btn-danger">Anuluj</button>
+    </div>
+    <p class="pay-hint">Po opłaceniu raport zapisze się automatycznie. Jedna płatność = jeden plik PDF.</p>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <span>Kalkulator projektu · Rami Nassar · BIM architects &amp; consultants</span>
+  <a href="mailto:raminassar.arch@gmail.com">raminassar.arch@gmail.com</a>
+  <span>© 2026 · wersja 1.7.0 WWW</span>
+  <a href="embed.html">Osadź w Google Sites</a>
+</footer>
+<div id="toast" class="toast" hidden></div>
+<script src="parametry.js?v=1.7.0"></script>
+<script src="js/config.js?v=1.7.0"></script>
+<script src="js/payment-web.js?v=1.7.0"></script>
+<script src="app.js?v=1.7.0"></script>
+<script src="widoki.js?v=1.7.0"></script>
+</body>
+</html>

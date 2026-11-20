@@ -1,0 +1,211 @@
+/* Wygląd aplikacji. Kolory są w zmiennych :root (jasny motyw) oraz w blokach dark (ciemny motyw). */
+:root{--bg:#EDF0F3;--panel:#fff;--ink:#16202A;--mute:#5B6773;--line:#D3DAE1;--acc:#2B5F8E;--bim:#B4691F;--ok:#2E7D5B;--warn:#9A5B00;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#11171D;--panel:#1A222B;--ink:#E7ECF1;--mute:#97A3AF;--line:#2C3743;--acc:#6FA6D6;--bim:#E0A05A;--ok:#5CC49A;--warn:#E3A93B;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#11171D;--panel:#1A222B;--ink:#E7ECF1;--mute:#97A3AF;--line:#2C3743;--acc:#6FA6D6;--bim:#E0A05A;--ok:#5CC49A;--warn:#E3A93B;color-scheme:dark}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Public Sans",system-ui,sans-serif;font-variant-numeric:tabular-nums}
+.site-head{padding:28px 24px 8px;max-width:1280px;margin:auto;display:flex;gap:20px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+h1{font-size:26px;line-height:1.2;margin:0 0 6px;font-weight:700;letter-spacing:-.01em}
+header p{margin:0;color:var(--mute);max-width:70ch}
+main{display:grid;grid-template-columns:minmax(300px,380px) 1fr;gap:20px;max-width:1280px;margin:auto;padding:16px 24px 48px;align-items:start}
+.left{display:grid;gap:20px;align-content:start;min-width:0}
+@media(max-width:900px){main{grid-template-columns:1fr;padding:12px 14px 40px}.site-head{padding:20px 14px 4px}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px 18px}
+form.panel{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto}
+@media(max-width:900px){form.panel{position:static;max-height:none}}
+fieldset{border:0;border-top:1px solid var(--line);margin:14px 0 0;padding:12px 0 0}
+fieldset:first-of-type{border-top:0;margin-top:0;padding-top:0}
+legend{font-weight:700;padding:0 8px 0 0;font-size:15px}
+legend.bim{color:var(--bim)}
+label{display:block;font-size:13px;color:var(--mute);margin:10px 0 3px}
+select,input{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:5px;padding:7px 9px}
+select:focus,input:focus,button:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+.total{display:flex;flex-wrap:wrap;gap:8px 32px;align-items:baseline}
+.big{font-size:44px;font-weight:700;letter-spacing:-.02em;line-height:1.05}
+.range{color:var(--mute)}
+.bar{display:flex;height:22px;border-radius:4px;overflow:hidden;margin:16px 0 6px;background:var(--line)}
+.bar i{display:block;min-width:2px}
+.split{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:14px}
+.split div{border-left:3px solid var(--line);padding-left:10px}
+.split b{display:block;font-size:18px}.split span{color:var(--mute);font-size:13px}
+h2{font-size:17px;margin:0 0 8px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:520px}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12.5px;color:var(--mute);font-weight:500}
+td.n,th.n{text-align:right;white-space:nowrap}
+tr.sum td{font-weight:700;border-top:2px solid var(--line)}
+.sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:7px}
+.tag{font-size:12px;color:var(--mute)}.tag.chk{color:var(--warn);font-weight:500}
+.note{border-left:3px solid var(--warn);padding:6px 10px;margin:8px 0;background:var(--bg);font-size:13.5px}
+.stack{display:grid;gap:20px}
+.foot{color:var(--mute);font-size:12.5px;max-width:90ch}
+.foot.about{margin-top:6px;padding-top:8px;border-top:1px solid var(--line);font-size:11.5px}
+
+/* --- Szacowany czas i kanban --- */
+.czas-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:4px 0 14px}
+.czas-summary>div{border:1px solid var(--line);border-radius:6px;padding:8px 10px;background:var(--bg)}
+.czas-summary b{display:block;font-size:18px;line-height:1.2}
+.czas-summary span{font-size:12px;color:var(--mute)}
+.czas-summary .czas-total{grid-column:1/-1;border-color:var(--acc);background:color-mix(in srgb,var(--acc) 8%,var(--panel))}
+.czas-summary .czas-total b{font-size:30px;color:var(--acc)}
+.kanban{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;align-items:start}
+@media(max-width:900px){.kanban{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.kanban{grid-template-columns:1fr}}
+.kanban-col{border:1px solid var(--line);border-top:3px solid var(--kolor);border-radius:6px;background:var(--bg);padding:8px;min-width:0}
+.kanban-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px;margin-bottom:8px}
+.kanban-head b{font-size:13.5px}
+.kanban-head span{margin-left:auto;font-size:12px;font-weight:700;color:var(--kolor)}
+.kanban-head small{flex:1 0 100%;font-size:11px;color:var(--mute)}
+.kanban-cards{display:grid;gap:6px}
+.kanban-card{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:6px 7px;font-size:12px;line-height:1.3}
+.kanban-kod{display:inline-block;font:600 10px ui-monospace,Consolas,monospace;color:var(--kolor);margin-right:5px}
+.kanban-nazwa{color:var(--ink)}
+.kanban-dni{display:block;margin-top:3px;font-size:11px;color:var(--mute)}
+.kanban-tag{display:inline-block;margin-left:4px;font-size:10px;color:var(--mute);border:1px solid var(--line);border-radius:3px;padding:0 4px}
+
+/* --- Harmonogram platnosci --- */
+.czas-summary .plat-total{grid-column:1/-1;border-color:var(--ok);background:color-mix(in srgb,var(--ok) 8%,var(--panel))}
+.czas-summary .plat-total b{font-size:30px;color:var(--ok)}
+.czas-summary .czas-total b{font-size:26px}
+
+/* --- Przyciski --- */
+.btn{font:inherit;font-size:13.5px;font-weight:600;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:9px 14px;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--acc);color:var(--acc)}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--acc);border-color:var(--acc);color:#fff;font-size:14px;padding:10px 18px}
+.btn-primary:hover{background:var(--acc);border-color:var(--acc);color:#fff;filter:brightness(1.12)}
+.btn-danger{color:var(--warn);border-color:var(--line)}
+.btn-danger:hover{border-color:var(--warn);color:var(--warn)}
+
+/* --- Panel parametrów --- */
+#paramPanel summary{cursor:pointer;font-size:14px}
+#paramPanel>summary{list-style:none;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+#paramPanel>summary::-webkit-details-marker{display:none}
+#paramPanel>summary::before{content:'▸';color:var(--acc);display:inline-block;transition:transform .15s}
+#paramPanel[open]>summary::before{transform:rotate(90deg)}
+#paramPanel .sub{border-top:1px solid var(--line);margin-top:12px;padding-top:10px}
+.param-body{padding-top:6px}
+.hint{font-size:12.5px;color:var(--mute);margin:8px 0 4px}
+.param-editor{margin-top:8px;max-height:340px;overflow:auto;padding-right:4px}
+.param-group{margin:10px 0 4px;font-size:12px;font-weight:700;color:var(--acc);text-transform:uppercase;letter-spacing:.04em}
+.param-grid{display:grid;grid-template-columns:1fr 108px;gap:6px 8px;align-items:center}
+.param-grid label{font-size:12.5px;margin:0;color:var(--mute);overflow-wrap:anywhere}
+.param-grid input{padding:5px 7px;font-size:13px}
+.param-grid input.changed{border-color:var(--warn);background:color-mix(in srgb,var(--warn) 8%,var(--panel))}
+.param-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
+.custom-add{margin:8px 0}
+.custom-add input[type=text],.custom-add input[type=number]{width:100%;margin-bottom:6px}
+.custom-add-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.custom-add-row input[type=number]{flex:1;min-width:110px;margin:0}
+label.inline{display:flex;gap:6px;align-items:center;font-size:12.5px;color:var(--mute);margin:0;white-space:nowrap;cursor:pointer}
+label.inline input{width:auto;margin:0}
+.custom-list{margin-top:8px}
+.custom-item{display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line);font-size:13px}
+.custom-item .nm{flex:1;min-width:0;overflow-wrap:anywhere}
+.custom-item .val{white-space:nowrap;font-weight:600}
+.custom-item .del{background:none;border:0;color:var(--mute);cursor:pointer;font-size:17px;line-height:1;padding:0 4px}
+.custom-item .del:hover{color:var(--warn)}
+#npNazwa:invalid{border-color:var(--warn)}
+.empty{color:var(--mute);font-size:12.5px;font-style:italic;padding:6px 0}
+
+.head-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.desktop-only{display:none}
+body.desktop .desktop-only{display:inline-block}
+.toast{position:fixed;right:18px;bottom:18px;max-width:min(420px,calc(100vw - 36px));background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--acc);border-radius:7px;padding:11px 14px;font-size:13.5px;box-shadow:0 6px 22px rgba(0,0,0,.16);z-index:50}
+.toast.error{border-left-color:var(--warn)}
+.toast button{margin-left:10px;font:inherit;font-size:12px;color:var(--acc);background:none;border:0;cursor:pointer;font-weight:700}
+
+/* --- Opłata za raport PDF --- */
+.pay-modal{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(10,18,28,.55);backdrop-filter:blur(2px)}
+.pay-modal[hidden]{display:none}
+.pay-card{width:min(440px,100%);background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:26px 26px 22px;text-align:center;box-shadow:0 18px 50px rgba(0,0,0,.28)}
+.pay-icon{width:52px;height:52px;margin:0 auto 12px;border-radius:12px;display:grid;place-items:center;background:var(--acc);color:#fff;font-weight:800;font-size:15px;letter-spacing:.5px}
+.pay-card h2{margin:0 0 6px;font-size:20px}
+.pay-price{margin:0 0 14px;display:flex;flex-direction:column;gap:2px}
+.pay-price b{font-size:28px;color:var(--acc)}
+.pay-price span{font-size:12px;color:var(--mute)}
+.pay-status{min-height:40px;margin:0 0 10px;font-size:13.5px;line-height:1.45}
+.pay-session{margin:0 0 12px;padding:8px;border:1px dashed var(--line);border-radius:6px;font:11px ui-monospace,Consolas,monospace;color:var(--mute);word-break:break-all}
+.pay-track{height:5px;border-radius:4px;background:var(--line);overflow:hidden;margin-bottom:16px}
+.pay-track>div{height:100%;width:12%;background:var(--acc);transition:width .4s ease}
+.pay-actions{display:flex;gap:8px;justify-content:center}
+.pay-hint{margin:14px 0 0;font-size:11px;color:var(--mute)}
+
+/* --- Blokada wyników do czasu opłaty za PDF --- */
+.results-lock{text-align:center;padding:34px 20px;border-style:dashed;background:color-mix(in srgb,var(--acc) 7%,var(--panel))}
+.results-lock .lock-mark{width:46px;height:46px;margin:0 auto 12px;border-radius:10px;display:grid;place-items:center;background:var(--acc);color:#fff;font-weight:800;font-size:14px;letter-spacing:.4px}
+.results-lock h2{margin:0 0 8px;font-size:20px}
+.results-lock>p{margin:0 auto 16px;max-width:62ch;color:var(--mute);font-size:14px}
+.results-lock .tag{display:block;margin-top:12px}
+body:not(.results-unlocked) .stack>.print-head,
+body:not(.results-unlocked) .stack>section.panel:not(#resultsLock),
+body:not(.results-unlocked) .stack>.print-foot{display:none!important}
+body.results-unlocked #resultsLock{display:none!important}
+
+/* --- Elementy tylko do wydruku / PDF --- */
+.print-head,.print-foot{display:none}
+
+@media print{
+  @page{size:A4;margin:14mm}
+  :root,body{background:#fff!important;color:#000!important}
+  /* PDF zawsze zawiera kalkulator – niezależnie od aktywnego widoku. */
+  .view-nav,#viewWizard,.pay-modal{display:none!important}
+  #viewCalc{display:block!important}
+  body{font-size:11px;line-height:1.35}
+  .site-head .btn,.left,#paramPanel,.site-head p,.foot{display:none!important}
+  .site-head{padding:0;margin:0 0 10px;display:block}
+  .site-head h1{font-size:17px;margin:0}
+  main{display:block;max-width:none;margin:0;padding:0}
+  .stack{display:block}
+  .panel{border:0;border-top:1px solid #999;border-radius:0;padding:8px 0;margin:0 0 10px;break-inside:avoid;background:#fff}
+  .panel h2{font-size:13px;margin:0 0 6px}
+  .print-head{display:block;border-bottom:2px solid #000;padding-bottom:6px;margin-bottom:12px}
+  .print-title{font-size:18px;font-weight:700}
+  .print-meta{font-size:10.5px;color:#333;margin-top:3px}
+  .print-foot{display:block;font-size:9.5px;color:#555;border-top:1px solid #999;padding-top:6px;margin-top:12px}
+  .big{font-size:30px}
+  .range{font-size:11px}
+  .bar{height:14px;margin:10px 0 4px;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  .bar i,.sw{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  .split div{break-inside:avoid}
+  .split b{font-size:14px}
+  table{min-width:0;font-size:10px}
+  th,td{padding:4px 5px;border-bottom:1px solid #ccc}
+  tr.sum td{border-top:2px solid #000}
+  .note{background:#fff;border-left-color:#000;font-size:10px;padding:4px 8px}
+  .tag{font-size:9.5px;color:#333}
+  .tw{overflow:visible}
+  #resultsLock{display:none!important}
+  /* Render PDF ma zawsze zawierać wyniki – niezależnie od blokady na ekranie. */
+  body.pdf-render .stack>.print-head,
+  body.pdf-render .stack>section.panel:not(#resultsLock),
+  body.pdf-render .stack>.print-foot{display:block!important}
+  #customResult[hidden],#brzResult[hidden],#zakresResult[hidden],#drkResult[hidden]{display:none!important}
+  section,.split,.bar,.note,tr{break-inside:avoid}
+  h2,.panel{break-after:avoid}
+  /* Kanban w PDF – wąskie kolumny, małe karty, bez cieni. */
+  .czas-summary{grid-template-columns:repeat(5,1fr);gap:4px;margin:4px 0 8px}
+  .czas-summary>div{border:1px solid #999;background:#fff;padding:4px 6px}
+  .czas-summary b{font-size:12px}
+  .czas-summary span{font-size:8.5px;color:#333}
+  .czas-summary .czas-total{grid-column:1/-1;background:#fff;border-color:#000}
+  .czas-summary .czas-total b{font-size:18px;color:#000}
+  .kanban{grid-template-columns:repeat(4,1fr);gap:4px}
+  .kanban-col{border:1px solid #999;border-top:2px solid #000;background:#fff;padding:4px}
+  .kanban-head{margin-bottom:4px;gap:2px 4px}
+  .kanban-head b{font-size:9.5px}
+  .kanban-head span{font-size:9px;color:#000}
+  .kanban-head small{font-size:8px;color:#333}
+  .kanban-cards{gap:3px}
+  .kanban-card{border:1px solid #ccc;background:#fff;padding:3px 4px;font-size:8.5px;line-height:1.25;break-inside:avoid}
+  .kanban-kod{font-size:8px;color:#000}
+  .kanban-dni{font-size:8px;color:#333;margin-top:1px}
+  .kanban-tag{font-size:8px;color:#333;border-color:#ccc}
+  /* Harmonogram platnosci w PDF. */
+  .czas-summary .plat-total{grid-column:1/-1;background:#fff;border-color:#000}
+  .czas-summary .plat-total b{font-size:18px;color:#000}
+  .czas-summary .czas-total b{font-size:16px}
+  #zespolTab td:nth-child(3),#zespolTab td:nth-child(5){color:#333}
+  #plat td:nth-child(3),#plat td:nth-child(4){color:#333}
+}
