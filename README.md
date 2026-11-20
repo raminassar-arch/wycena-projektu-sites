@@ -39,7 +39,8 @@ zapobiega przetwarzaniu przez Jekyll.
 
 Zakresy Z1–Z6 są sześcioma niezależnymi pakietami dodatkowymi. Baza E1–E9
 zawiera już standardową koncepcję, konstrukcję i instalacje – w kalkulatorze
-jest ostrzeżenie przed podwójnym zamówieniem.
+jest ostrzeżenie przed podwójnym zamówieniem. Projekt wnętrz występuje tylko
+jako zakres Z4 – usunięto jego duplikat z „Projektów branżowych”.
 
 ---
 
@@ -106,7 +107,7 @@ Następnie w repozytorium: **Settings → Pages → Build and deployment →
 Source: Deploy from a branch → Branch: `main`, folder: `/ (root)` → Save**.
 Adres publikacji: `https://raminassar-arch.github.io/wycena-projektu-sites/`.
 
-Po każdej zmianie plików podnieś sufiks w zapytaniach `?v=1.7.0c`
+Po każdej zmianie plików podnieś sufiks w zapytaniach `?v=1.7.0d`
 w `index.html` oraz w `js/payment-web.js` (lista arkuszy w wydruku), aby
 przeglądarki nie trzymały starych plików z pamięci podręcznej. GitHub Pages
 ustawia `Cache-Control: max-age=600`.

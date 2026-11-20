@@ -58,7 +58,8 @@ const PARAMETRY = {
   },
 
   /* --- Projekty branżowe dodatkowe (poza bazą E1–E9, więc nie podwajają E5–E7).
-       [klucz pola, nazwa branży, stawka zł/m² powierzchni użytkowej] [S] --- */
+       [klucz pola, nazwa branży, stawka zł/m² powierzchni użytkowej] [S] ---
+       Projekt wnętrz nie występuje tutaj – jest tylko zakresem Z4 poniżej. */
   branze: [
     ['teletech', 'Instalacje teletechniczne (ICT, alarmy, CCTV)', 12],
     ['hvac', 'Wentylacja i klimatyzacja (HVAC)', 18],
@@ -67,7 +68,6 @@ const PARAMETRY = {
     ['bms', 'Automatyka budynkowa (BMS)', 9],
     ['oze', 'Fotowoltaika i OZE', 12],
     ['ziel', 'Projekt zieleni i zagospodarowania', 6],
-    ['wnetrza', 'Projekt wnętrz', 25],
   ],
 
   /* --- Zakresy opracowania (rodzaje projektu) jako osobne opcje ---
