@@ -11,7 +11,7 @@
 
   /* Kolejność pytań w kreatorze – grupy pól z formularza. */
   const KROKI = [
-    { tytul: 'Rodzaj projektu (Z1–Z6)', opis: 'Wybierz fazy i rodzaje projektu. Kliknij przycisk, aby włączyć lub odznaczyć zakres.', pola: ZAKRESY.map(([k]) => k) },
+    { tytul: 'Rodzaj projektu (Z1–Z6)', opis: 'Wybierz fazy i rodzaje projektu. Kliknij przycisk, aby włączyć lub odznaczyć zakres. Projekt bez pozwolenia (np. wnętrze) wybierasz w kroku „Formalności”.', pola: ZAKRESY.map(([k]) => k) },
     { tytul: 'Dane obiektu', opis: 'Rodzaj budynku, powierzchnia, kondygnacje.', pola: ['obj', 'char', 'pu', 'pz', 'kond', 'podp', 'geo', 'zab'] },
     { tytul: 'Projekt i usługi', opis: 'Typ projektu, lokalizacja, zakres usług dodatkowych.', pola: ['typ', 'gcena', 'lok', 'skompl', 'instal', 'wyk', 'kosztorys', 'wiz'] },
     { tytul: 'Praca w BIM', opis: 'Modelowanie, zakres branż, formaty i wymagania.', pola: ['bim', 'lod', 'zakres', 'koord', 'eir', 'ifc', 'd5', 'wizn', 'cde'] },
@@ -19,7 +19,7 @@
     { tytul: 'Koszty drukowania', opis: 'Komplety, arkusze i oprawa dokumentacji dla inwestora i urzędu.', pola: ['drukKomplet', 'drukA4', 'drukA3', 'drukA1', 'drukOprawa'] },
     { tytul: 'Zespół projektowy', opis: 'Obsada ról skraca lub wydłuża szacowany czas; koszty osobowe są opcją dodatkową.', pola: ['zKier', 'zArch', 'zProj', 'zBim', 'zAsyst', 'zEkipa', 'zKoszty'] },
     { tytul: 'Harmonogram płatności', opis: 'Rozłożenie kosztu inwestycji na raty: co miesiąc, co kwartał, co pół roku lub według etapów.', pola: ['platnosc'] },
-    { tytul: 'Formalności – plan i wnioski', opis: 'Podstawa planistyczna, tryb i uzgodnienia.', pola: ['podst', 'tryb', 'pelnom', 'bliska', 'mapa', 'przyl', 'zjazd', 'wodno', 'rolna'] },
+    { tytul: 'Formalności – plan i wnioski', opis: 'Podstawa planistyczna, tryb i uzgodnienia. Wybierz „Bez pozwolenia” dla wnętrz, koncepcji, projektów wykonawczych i branżowych – opłata skarbowa oraz zgłoszenie nie są naliczane.', pola: ['podst', 'tryb', 'pelnom', 'bliska', 'mapa', 'przyl', 'zjazd', 'wodno', 'rolna'] },
     { tytul: 'Formalności – realizacja i koszty', opis: 'Nadzór, rozrzut cen i podatek VAT.', pola: ['kb', 'inz', 'kosztm2', 'spread', 'vat'] },
   ];
 

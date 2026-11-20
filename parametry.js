@@ -30,7 +30,12 @@ const PARAMETRY = {
   skomplikowanie: { 'Prosty': 0.85, 'Standardowy': 1.00, 'Złożony': 1.25, 'Bardzo złożony': 1.50 },
   instalacje: { 'Podstawowy': 0.85, 'Standardowy': 1.00, 'Rozszerzony (PC, rekuperacja, PV)': 1.30 },
   charakterPrac: { 'Nowa budowa': 1.00, 'Rozbudowa': 1.10, 'Przebudowa / nadbudowa': 1.15 },
-  tryb: { 'Pozwolenie na budowę': 1.00, 'Zgłoszenie z projektem budowlanym': 1.00, 'Zgłoszenie bez projektu (dom do 70 m²)': 0.40 },
+  /* --- Tryb formalny. „Bez pozwolenia” dotyczy projektów, które nie wymagają
+       decyzji ani zgłoszenia (np. wnętrza, koncepcja, opracowania branżowe,
+       wykonawczy bez pozwolenia). Współczynnik 1.00 – zmienia się tylko
+       zestaw formalności, nie cena opracowania. --- */
+  tryb: { 'Pozwolenie na budowę': 1.00, 'Zgłoszenie z projektem budowlanym': 1.00, 'Zgłoszenie bez projektu (dom do 70 m²)': 0.40,
+    'Bez pozwolenia (projekt nie wymaga pozwolenia)': 1.00 },
 
   /* --- Kategoria geotechniczna: [czynnik projektu konstrukcji, koszt dokumentacji geotechnicznej] --- */
   geotechnika: { 1: [0.95, 1500], 2: [1.00, 3500], 3: [1.25, 9000] },

@@ -10,6 +10,10 @@ const zl = v => fmtPln.format(Math.round(v));
 const TN = ['Tak', 'Nie'];
 const ZAKRES = ['Tylko architektura', 'Architektura + konstrukcja', 'Wszystkie branże (A+K+instalacje)'];
 const TRYB_POZWOLENIE = Object.keys(P.tryb)[0];   // „Pozwolenie na budowę”
+/* Projekt bez pozwolenia (wnętrza, koncepcja, branże, wykonawczy bez decyzji):
+   nie nalicza opłaty skarbowej, zgłoszenia ani zaświadczenia o braku sprzeciwu. */
+const TRYB_BEZ_POZWOLENIA = 'Bez pozwolenia (projekt nie wymaga pozwolenia)';
+const jestBezPozwolenia = () => s.tryb === TRYB_BEZ_POZWOLENIA;
 /* Harmonogram płatności: etykiety w formularzu oraz odstęp w miesiącach.
    Ostatni tryb (0) oznacza raty przypisane do 4 etapów z kanbanu. */
 const PLATNOSCI = ['Co miesiąc', 'Co 3 miesiące', 'Co 6 miesięcy', 'Według etapów'];
@@ -241,7 +245,7 @@ function zbudujFormularz() {
     const naglowek = `<fieldset${grupaZakresow ? ' class="scope-fieldset"' : ''}>` +
       `<legend class="${tytul === 'Praca w BIM' ? 'bim' : ''}">${tytul}</legend>` +
       (grupaZakresow
-        ? '<p class="scope-hint">Kliknij przycisk, aby włączyć lub odznaczyć zakres. Baza E1–E9 już zawiera standardową koncepcję, konstrukcję i instalacje.</p>'
+        ? '<p class="scope-hint">Kliknij przycisk, aby włączyć lub odznaczyć zakres. Baza E1–E9 już zawiera standardową koncepcję, konstrukcję i instalacje. Jeśli projekt nie wymaga pozwolenia (np. wnętrze, koncepcja, branża), wybierz tryb „Bez pozwolenia” w Formalnościach – opłata skarbowa i zgłoszenie nie zostaną naliczone.</p>'
         : '');
     return naglowek + pola.map(([k, etykieta, opcje]) => {
       if (ZAKRESY_KLUCZE.has(k)) return przyciskZakresuHtml(k, etykieta, s[k], k);
@@ -374,6 +378,7 @@ function oblicz() {
   const A = 'Przed projektem', W = 'Wniosek i uzgodnienia', R = 'Realizacja i odbiór';
   const TAK = 'TAK', NIE = 'NIE', SPR = 'SPRAWDŹ', tn = c => c ? TAK : NIE;
   const pozwolenie = s.tryb === TRYB_POZWOLENIE;
+  const bezPozwolenia = jestBezPozwolenia();
   const formalnosci = [
     [A, 'Wypis i wyrys z MPZP', tn(s.podst === 'MPZP'), F.wypisMpzp, 0],
     [A, 'Decyzja o warunkach zabudowy (WZ)', s.podst === 'WZ - nowy wniosek' ? TAK : s.podst === 'Do ustalenia' ? SPR : NIE, F.decyzjaWZ, 1],
@@ -390,8 +395,8 @@ function oblicz() {
     [W, 'Uzgodnienie konserwatora zabytków', tn(s.zab === 'Tak'), F.konserwator, 0],
     [W, 'Pozwolenie lub zgłoszenie wodnoprawne', tn(s.wodno === 'Tak'), F.wodnoprawne, 0],
     [W, 'Opłata skarbowa za pozwolenie na budowę', tn(pozwolenie), Math.min(F.oplataSkarbowaMax, F.oplataSkarbowaZaM2 * s.pu), 1],
-    [W, 'Zgłoszenie robót (21 dni na sprzeciw)', tn(!pozwolenie), 0, 1],
-    [W, 'Zaświadczenie o braku sprzeciwu', tn(!pozwolenie), F.zaswiadczenieBrakSprzeciwu, 1],
+    [W, 'Zgłoszenie robót (21 dni na sprzeciw)', tn(!pozwolenie && !bezPozwolenia), 0, 1],
+    [W, 'Zaświadczenie o braku sprzeciwu', tn(!pozwolenie && !bezPozwolenia), F.zaswiadczenieBrakSprzeciwu, 1],
     [W, 'Pełnomocnictwo', tn(s.pelnom === 'Tak' && s.bliska === 'Nie'), F.pelnomocnictwo, 1],
     [W, 'Umowa z zapisami BIM (LOD, licencje, formaty)', tn(s.bim === 'Tak'), 0, 0],
     [W, 'Dokumentacja dla urzędu w wymaganej formie (nie sam model BIM)', s.bim === 'Tak' ? SPR : NIE, 0, 0],
@@ -416,6 +421,7 @@ function obliczCzas(r) {
   const o = P.obiekty[s.obj];
   const ppoz = o[2], sanepid = o[3];
   const pozwolenie = s.tryb === TRYB_POZWOLENIE;
+  const bezPozwolenia = jestBezPozwolenia();
   const gotowy = s.typ !== 'Indywidualny';
   const wspObj = o[4] || 1;
   const wspSkom = C.wspSkomplikowanie[s.skompl] || 1;
@@ -460,9 +466,12 @@ function obliczCzas(r) {
   if (sanepid) karty.push(k('uzgod', 'U4', 'Opinia sanitarna (sanepid)', uz.sanepid, mnoznikUzgod));
   if (s.zab === 'Tak') karty.push(k('uzgod', 'U5', 'Uzgodnienie konserwatora zabytków', uz.konserwator, mnoznikUzgod));
   if (s.wodno === 'Tak') karty.push(k('uzgod', 'U6', 'Pozwolenie wodnoprawne', uz.wodnoprawne, mnoznikUzgod));
-  karty.push(pozwolenie
-    ? k('uzgod', 'U7', 'Decyzja o pozwoleniu na budowę', uz.pozwolenie, mnoznikUzgod)
-    : k('uzgod', 'U7', 'Zgłoszenie (21 dni na sprzeciw)', uz.zgloszenie, mnoznikUzgod));
+  // Tryb bez pozwolenia nie ma czynności urzędowej U7 – karta jest pomijana.
+  if (!bezPozwolenia) {
+    karty.push(pozwolenie
+      ? k('uzgod', 'U7', 'Decyzja o pozwoleniu na budowę', uz.pozwolenie, mnoznikUzgod)
+      : k('uzgod', 'U7', 'Zgłoszenie (21 dni na sprzeciw)', uz.zgloszenie, mnoznikUzgod));
+  }
 
   // FAZA 4: Realizacja i odbiór.
   const rz = C.realizacja;
@@ -482,7 +491,7 @@ function obliczCzas(r) {
   const kolumny = [
     { id: 'przyg', tytul: 'Przygotowanie', pod: 'Przed projektem', kolor: 'var(--acc)' },
     { id: 'projekt', tytul: 'Projektowanie', pod: 'E1–E9, BIM, branże', kolor: 'var(--bim)' },
-    { id: 'uzgod', tytul: 'Uzgodnienia', pod: 'Pozwolenie / zgłoszenie', kolor: 'var(--warn)' },
+    { id: 'uzgod', tytul: 'Uzgodnienia', pod: bezPozwolenia ? 'Projekt bez pozwolenia' : 'Pozwolenie / zgłoszenie', kolor: 'var(--warn)' },
     { id: 'realiz', tytul: 'Realizacja', pod: 'Budowa i odbiór', kolor: 'var(--ok)' },
   ].map(col => {
     const lista = karty.filter(x => x.faza === col.id);
@@ -646,6 +655,11 @@ function pokazWyniki() {
   const aktywneZakresy = (r.zakresy || []).filter(x => x.v > 0).map(x => x.n);
   if (aktywneZakresy.length) uwagi.push('Zaznaczone zakresy (' + aktywneZakresy.join(', ') +
     ') są dodatkowymi pakietami. Baza E1–E9 już obejmuje standardową koncepcję, konstrukcję i instalacje – sprawdź, czy nie zamawiasz ich podwójnie.');
+  if (jestBezPozwolenia()) {
+    uwagi.push('Tryb „bez pozwolenia”: pominięto opłatę skarbową za pozwolenie, zgłoszenie robót i zaświadczenie o braku sprzeciwu. Dotyczy m.in. wnętrz, koncepcji, projektów wykonawczych i opracowań branżowych nie wymagających decyzji administracyjnej.');
+  } else if (aktywneZakresy.length && s.tryb === TRYB_POZWOLENIE) {
+    uwagi.push('Zaznaczone zakresy mogą dotyczyć projektów niewymagających pozwolenia (np. wnętrza, koncepcja, branże). Jeśli decyzja nie jest potrzebna, wybierz tryb „Bez pozwolenia” w Formalnościach – opłata skarbowa i zgłoszenie nie zostaną naliczone.');
+  }
   $('notes').innerHTML = uwagi.map(n => `<div class="note">${n}</div>`).join('');
 
   // Tabela etapów.
